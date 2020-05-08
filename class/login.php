@@ -12,6 +12,7 @@ class Login {
         $this->SetJS('js/jquery-3.4.1.min');
         $this->SetJS('js/bootstrap.min');
         $this->SetCSS('css/bootstrap');
+        $this->SetCSS('font-awesome/css/font-awesome');
         $this->setCSS('css/estilos');
         $this->SetCSS('css/style');
         $this->SetCSS('css/login');
@@ -44,12 +45,12 @@ class Login {
             <body>
                 <div id="content" class="animated fadeInDown">
                     <div id="divDescricao" class="col-md-7">
-                        <div>
+                        <div style='margin-left: 10px'>
                             <h3 class="logo-name">Bem-vindo ao Sistema<br/>
                                 <span><?= nmSistema; ?></span>
                             </h3>
                             <h3 class="logo-descricao"></h3>
-                            <span>Sistema de Gerenciamento de Ocorrências UPF</span>
+                            <span style='font-size: 19px'>Sistema de Gerenciamento de Ocorrências UPF</span>
                         </div>
                     </div>
                     <div id="divLogin" class="col-md-5">
@@ -83,7 +84,6 @@ class Login {
     }
 
     public function Submit() {
-        Login::Logout();
         Login::view();
 
         if (isset($_POST['btnSubmit'])) {
@@ -104,7 +104,7 @@ class Login {
                 $this->idusuario = $result[0]['IDUSUARIO'];
 
                 $this->ConfiguraSession();
-                
+
                 header('location: index.php');
             } else {
                echo HTML::AddAlerta('warning', 'Atenção! Usuário não cadastrado');
