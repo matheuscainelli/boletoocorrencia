@@ -104,7 +104,7 @@ class Login {
                 $this->idusuario = $result[0]['IDUSUARIO'];
 
                 $this->ConfiguraSession();
-
+                
                 header('location: index.php');
             } else {
                echo HTML::AddAlerta('warning', 'Atenção! Usuário não cadastrado');
