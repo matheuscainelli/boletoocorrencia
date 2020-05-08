@@ -107,7 +107,7 @@ class Login {
 
                 header('location: index.php');
             } else {
-               echo HTML::AddAlerta('warning', 'Atenção! Usuário não cadastrado');
+                echo HTML::AddAlerta('warning', 'Atenção! Usuário não cadastrado');
             }
         }
     }
