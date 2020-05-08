@@ -2,6 +2,8 @@
 require 'class/html.php';
 require 'config/config.php';
 require 'class/database.php';
+require 'class/session.php';
+
 class Login {
     private $usuario;
     private $idusuario;
@@ -11,6 +13,7 @@ class Login {
         $this->SetJS('js/bootstrap.min');
         $this->SetCSS('css/bootstrap');
         $this->setCSS('css/estilos');
+        $this->SetCSS('css/style');
         $this->SetCSS('css/login');
     }
 
@@ -70,7 +73,6 @@ class Login {
     }
 
     private function ConfiguraSession(){
-        require 'class/session.php';
         Session::Start();
         Session::Set('IDUSUARIO', $this->idusuario);
         Session::Set('NMUSUARIO', $this->usuario);
@@ -81,6 +83,7 @@ class Login {
     }
 
     public function Submit() {
+        Login::Logout();
         Login::view();
 
         if (isset($_POST['btnSubmit'])) {
@@ -95,14 +98,16 @@ class Login {
                     FROM usuario pa
                     WHERE pa.SGLOGIN = :SGLOGIN  AND pa.DSSENHA = :SENHA";
             $result = Database::ExecutaSQLDados($sql, $arrBinds);
-            
-            if (isset($result)) {
+
+            if (array_key_exists(0, $result)) {
                 $this->usuario = $result[0]['NMUSUARIO'];
                 $this->idusuario = $result[0]['IDUSUARIO'];
 
                 $this->ConfiguraSession();
 
                 header('location: index.php');
+            } else {
+               echo HTML::AddAlerta('warning', 'Atenção! Usuário não cadastrado');
             }
         }
     }
