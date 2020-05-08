@@ -162,6 +162,10 @@ class Database {
 
         Database::$conn = new PDO("mysql:host=".dbHost.";dbname=".dbName.";charset=utf8", dbUser, dbPassword, $options);
     }
+    
+   public static function DesconectaBD($conn) {
+        Database::$conn->close();
+   }
 
     public static function Debug($sql, $arrBinds = []) {
         Database::AjustaSQLBinds($sql, $arrBinds);
