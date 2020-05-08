@@ -2,7 +2,7 @@
 class Session {
     public static function Start() {
         if (!self::Isset()) {
-            session_name(sgSistema);
+            session_name(nmSistema);
             session_start();
             session_regenerate_id();
         }

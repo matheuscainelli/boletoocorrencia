@@ -1,5 +1,5 @@
 <?php
-define("dbHost", "");
-define("dbName", "");
-define("dbUser", "");
+define("dbHost", "localhost");
+define("dbName", "boletoocorrencia");
+define("dbUser", "root");
 define("dbPassword", "");

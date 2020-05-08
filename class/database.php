@@ -1,9 +1,7 @@
 <?php
 
 require_once './config/dbconfig.php';
-
-use PDO;
-
+require_once 'class/funcoes.php';
 class Database {
     private static $conn;
 
@@ -162,8 +160,8 @@ class Database {
 
         Database::$conn = new PDO("mysql:host=".dbHost.";dbname=".dbName.";charset=utf8", dbUser, dbPassword, $options);
     }
-    
-   public static function DesconectaBD($conn) {
+
+   public static function DesconectaBD() {
         Database::$conn->close();
    }
 

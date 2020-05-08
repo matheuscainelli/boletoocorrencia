@@ -1,4 +1,4 @@
 <?php
-define("nmSistema", "");
+define("nmSistema", "Boletos de Ocorrência");
 define("nrVersaoSistema", "");
 define("nrVersaoBD", "");

@@ -111,7 +111,7 @@ class HTML {
         $id = $attrButton['id'] ?? $name;
         $attrButton = array_merge(compact('type', 'name', 'id'), $attrButton);
 
-        $str = "<button ".self::MontaAttrHtml($attrButton).">$caption</button>";
+        $str = "<button ".self::MontaAttrHtml($attrButton)." value='true'>$caption</button>";
 
         return $str;
     }

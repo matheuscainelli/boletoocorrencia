@@ -1,0 +1,11 @@
+:root {
+  --corPrincipal: #006AAE;
+  --corSecundaria: #55b127;
+  --corTerciaria: #025328;
+}
+
+.btn-primary {
+  color: #ffffff;
+  background-color: #006AAE;
+  border-color: #357ebd;
+}
