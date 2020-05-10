@@ -7,13 +7,14 @@ class Form {
     public $sql;
     public $nmTbela;
     public $chave;
-    public $arrDados;
+    public $arrDados = [];
     public $attrInput;
     protected $arrLabelAcao = ['c'=>'Incluir', 'r'=>'Consultar', 'u'=>'Alterar', 'd'=>'Excluir'];
     protected $GetDados = [];
     protected $arrTableAction = [];
     protected $arrCamposSQL = [];
     protected $arrValidaPermissao = ['c'=>true, 'r'=>true, 'u'=>true, 'd'=>true];
+    private $arrBinds = [];
 
     function __construct($permissao, $legend) {
         Database::ConnectaBD();
@@ -46,7 +47,20 @@ class Form {
         return Database::ExecutaSQLDados($this->sql, array());
     }
 
+    public function SetDados() {
+        if ($this->acao <> 'c') {
+            if (array_key_exists('id', $_GET)) {
+                $this->sql = $this->sql . " AND " . $this->chave. " = ". $this->id;
+            }
+    
+            $this->arrDados = Database::ExecutaSqlDados($this->sql, $this->arrBinds);
+    
+            $this->arrDados = $this->arrDados[0];
+        }
+    }
+
     public function AddInput($type, $name, $caption = null, $attrInput = [], $attrDiv = [], $attrLabel = []) {
+        $this->SetDados();
         if (!empty($this->arrDados[$name])) {
             if ($type === 'checkbox') {
                 $attrInput['checked'] = $this->arrDados[$name] === 'S';
@@ -72,6 +86,7 @@ class Form {
     }
 
     public function AddSelect($name, $caption = null, $arrOption = [], $attrSelect = [], $attrDiv = [], $attrLabel = []) {
+        $this->SetDados();
         $selected = $this->arrDados[$name] ?? null;
 
         if (in_array($this->acao, ['r', 'd'])) {
@@ -91,6 +106,7 @@ class Form {
     }
 
     public function AddTextArea($name, $caption = null, $attrTextArea = [], $attrDiv = [], $attrLabel = []) {
+        $this->SetDados();
         $attrInput['value'] = $this->arrDados[$name] ?? ($attrInput['value'] ?? null);
 
         if (in_array($this->acao, ['r', 'd'])) {
@@ -202,7 +218,7 @@ class Form {
                         <span class="ibox-title"><?= $this->legend; ?></span>
                     </div>
                     <div class="ibox-body">
-                        <form name="form" id="formCadastro" class="inline-content" action="<?= $this->action?>?acao=<?= $this->acao ?>" method="POST" novalidate>
+                        <form name="form" id="formCadastro" class="inline-content" action="<?= $this->action?>?acao=<?= $this->acao ?>&id=<?=$this->id?>" method="POST" novalidate>
                             <div class="inline-body">
                                 <?php
                                 foreach ($this->arrForm as $arr):
@@ -270,7 +286,7 @@ class Form {
     }
 
     public function Show() {
-
+       $this->SetDados();
         if (array_key_exists('btnSubmit', $_POST)) {
             $dados = $this->AjustaCamposSQL();
 

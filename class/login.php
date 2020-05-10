@@ -97,8 +97,7 @@ class Login {
 
             $sql = "SELECT pa.IDUSUARIO, pa.NMUSUARIO
                     FROM usuario pa
-                    WHERE pa.SGUSUARIO = :SGUSUARIO  AND pa.PWUSUARIO = :PWUSUARIO";
-
+                    WHERE pa.SGUSUARIO = :SGUSUARIO  AND pa.PWUSUARIO = :PWUSUARIO AND pa.FLATIVO = 'S'";
             $result = Database::ExecutaSQLDados($sql, $arrBinds);
 
             if (array_key_exists(0, $result)) {

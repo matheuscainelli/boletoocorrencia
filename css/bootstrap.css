@@ -2653,14 +2653,15 @@ input[type="button"].btn-block {
   -webkit-transition: height 0.35s ease;
           transition: height 0.35s ease;
 }
-
+  
 @font-face {
   font-family: 'Glyphicons Halflings';
-  src: url('../../fonts/glyphicon/glyphicons-halflings-regular.eot');
-  src: url('../../fonts/glyphicon/glyphicons-halflings-regular.eot?#iefix') format('embedded-opentype'),
-       url('../../fonts/glyphicon/glyphicons-halflings-regular.woff') format('woff'),
-       url('../../fonts/glyphicon/glyphicons-halflings-regular.ttf') format('truetype'),
-       url('../../fonts/glyphicon/glyphicons-halflings-regular.svg#glyphicons-halflingsregular') format('svg');
+  src: url('fonts/glyphicon/glyphicons-halflings-regular.eot');
+  src: url('fonts/glyphicon/glyphicons-halflings-regular.eot?#iefix') format('embedded-opentype'),
+        url('fonts/glyphicon/glyphicons-halflings-regular.woff') format('woff'),
+        url('fonts/glyphicon/glyphicons-halflings-regular.woff2') format('woff'),
+        url('fonts/glyphicon/glyphicons-halflings-regular.ttf') format('truetype'),
+        url('fonts/glyphicon/glyphicons-halflings-regular.svg#glyphicons-halflingsregular') format('svg');
 }
 
 .glyphicon {
