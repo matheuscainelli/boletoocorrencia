@@ -1,20 +1,28 @@
 <?php
 class Form {
-    private $permissao;
-    private $action;
-    private $acao;
-    private $id;
-    private $sql;
-    private $chave;
-    private $row;
+    public $permissao;
+    public $action;
+    public $acao;
+    public $id;
+    public $sql;
+    public $nmTbela;
+    public $chave;
+    public $arrDados;
+    public $attrInput;
+    protected $arrLabelAcao = ['c'=>'Incluir', 'r'=>'Consultar', 'u'=>'Alterar', 'd'=>'Excluir'];
+    protected $GetDados = [];
+    protected $arrTableAction = [];
+    protected $arrCamposSQL = [];
+    protected $arrValidaPermissao = ['c'=>true, 'r'=>true, 'u'=>true, 'd'=>true];
 
     function __construct($permissao, $legend) {
+        Database::ConnectaBD();
         $this->permissao = $permissao;
         $this->legend = $legend;
         $this->method = 'POST';
         $this->setAction($_SERVER['PHP_SELF']);
-        // $this->acao = $this->VerificaParam('acao');
-        // $this->id = $this->VerificaParam('id');
+        $this->acao = array_key_exists('acao', $_GET) ? $_GET['acao'] : NULL;
+        $this->id = array_key_exists('id', $_GET) ? $_GET['id'] : NULL;
     }
 
     public function setAction($action) {
@@ -22,43 +30,273 @@ class Form {
         $this->redirectSubmit = $action;
     }
 
-    private function VerificaParam($param) {
-        $vlparam = $_POST[$param] <> NULL ? ($_POST[$param]) : ($_GET[$param]);
+    public function VerificaParam($param) {
+        $vlparam = array_key_exists($param, $_GET) ? $_GET[$param] : array_key_exists($param, $_POST) ? $_POST[$param] : NULL;
 
-        return ($vlparam);
+        return $vlparam;
     }
 
-    public function SetDB($sql, $chave) {
+    public function SetSql($sql, $tabela, $chave) {
         $this->sql = $sql;
+        $this->nmTabela = $tabela;
         $this->chave = $chave;
     }
 
-    private function GetDados() {
-        Database::ConnectaBD();
-        $this->row = Database::ExecutaSqlDados($this->sql, array());
-
-        $this->row = $this->row[0];
+    public function GetDados() {
+        return Database::ExecutaSQLDados($this->sql, array());
     }
 
-    public function Show() {
-        $lnkInclui = "<a href='$this->action' id='tableInsert' class='btn btn-primary btn-sm' style='margin-top:10px !important;margin-bottom:10px !important;margin-right:2px !important' title='Incluir'><i class=''></i>&nbsp Novo registro</a>";
-        $row = $this->GetDados();
+    public function AddInput($type, $name, $caption = null, $attrInput = [], $attrDiv = [], $attrLabel = []) {
+        if (!empty($this->arrDados[$name])) {
+            if ($type === 'checkbox') {
+                $attrInput['checked'] = $this->arrDados[$name] === 'S';
+            } else {
+                $attrInput['value'] = FormataValorUsuario(substr($name, 0 ,2), $this->arrDados[$name]);
+            }
+        }
+
+        if (in_array($this->acao, ['r', 'd'])) {
+            $attrInput['disabled'] = true;
+        }
+
+        $arr = [
+            'method'=>'AddInput',
+            'arg'=>[$type, $name, $caption, $attrInput, $attrDiv, $attrLabel]
+        ];
+
+        if (!isset($this->viewForm)) {
+            $this->arrForm[] = $arr;
+        } else {
+            return forward_static_call_array(["HTML", $arr['method']], $arr['arg']);
+        }
+    }
+
+    public function AddSelect($name, $caption = null, $arrOption = [], $attrSelect = [], $attrDiv = [], $attrLabel = []) {
+        $selected = $this->arrDados[$name] ?? null;
+
+        if (in_array($this->acao, ['r', 'd'])) {
+            $attrSelect['disabled'] = true;
+        }
+
+        $arr = [
+            'method'=>'AddSelect',
+            'arg'=>[$name, $caption, $selected, $arrOption, $attrSelect, $attrDiv, $attrLabel]
+        ];
+
+        if (!isset($this->viewForm)) {
+            $this->arrForm[] = $arr;
+        } else {
+            return forward_static_call_array(["HTML", $arr['method']], $arr['arg']);
+        }
+    }
+
+    public function AddTextArea($name, $caption = null, $attrTextArea = [], $attrDiv = [], $attrLabel = []) {
+        $attrInput['value'] = $this->arrDados[$name] ?? ($attrInput['value'] ?? null);
+
+        if (in_array($this->acao, ['r', 'd'])) {
+            $attrTextArea['disabled'] = true;
+        }
+
+        $arr = [
+            'method'=>'AddTextArea',
+            'arg'=>[$name, $caption, $attrTextArea, $attrDiv, $attrLabel]
+        ];
+
+        if (!isset($this->viewForm)) {
+            $this->arrForm[] = $arr;
+        } else {
+            return forward_static_call_array(["HTML", $arr['method']], $arr['arg']);
+        }
+    }
+
+    protected function AddHTML($html) {
+        $this->arrForm[] = [
+            'method'=>'AjustaHTMLDados',
+            'arg'=>[$html, []]
+        ];
+    }
+
+    public function GetLargura($largura = NULL) {
+        return HTML::GetLargura($largura);
+    }
+
+    private function Table() {
+        $dados = $this->GetDados();
+
+        $arrIconActionTable = [
+            'r'=>'fa-search',
+            'u'=>'fa-pencil',
+            'd'=>'fa-trash',
+        ];
+
+        foreach ($this->arrValidaPermissao as $tpPermissao => $flPermissao) {
+            if ($tpPermissao == 'c') {
+                continue;
+            }
+
+            $this->AddTableAction("<i class=\"fa ".$arrIconActionTable[$tpPermissao]." icon-form\" title=\"".$this->arrLabelAcao[$tpPermissao]."\"></i>", $this->action."?acao=$tpPermissao&id=:$this->chave:", $flPermissao);
+        }
+
         ?>
-        <div class='wrapper wrapper-content animated fadeInRight'>
-            <div class='ibox float-e-margins' style='margin: 2%'>
-                <div class='ibox-title' style='padding: 3px 15px 3px'>
-                    <h5 style='padding-top: 17px !important' id='descricao-tabela'><?= $this->legend ?></h5>
-                    <span style='float:right;align: right'><?=  $lnkInclui ?></span>
-                </div>
-                <div class='ibox-content'>
-                    <div class='table-responsive'>
-                        <table id='registroscadastrados' class='registros'>
-                        </table>
+        <div>
+            <div class="ibox">
+                <div class="ibox-content">
+                    <div class="ibox-header">
+                        <span class="ibox-title"><?= $this->legend; ?></span>
+                        <div class="ibox-buttons">
+                            <a class="btn btn-primary btn-sm" title="Incluir" href="<?= $this->action?>?acao=c">
+                                <i class="fas fa-plus-circle"></i>&nbsp;Novo registro
+                            </a>
+                        </div>
+                    </div>
+                    <div class="ibox-body">
+                        <div class="inline-content">
+                            <div class="inline-body">
+                                <table id="tableCadastro" class="table table-striped table-bordered table-hover">
+                                    <thead>
+                                        <tr>
+                                            <?php foreach ($this->arrTable as $arr): ?>
+                                                <th <?= HTML::MontaAttrHtml($arr['arg']['attrTh']); ?> ><?= $arr['arg']['caption']; ?></th>
+                                            <?php endforeach; ?>
+                                                <th class="no-sort" width="1px">Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php foreach ($dados as $arrVal): ?>
+                                            <tr>
+                                                <?php
+                                                    foreach ($this->arrTable as $arr): ?>
+                                                    <td <?= HTML::MontaAttrHtml($arr['arg']['attrTd'])?>>
+                                                <?= array_key_exists($arr['name'], $arrVal) ? FormataValorUsuario(substr($arr['name'], 0, 2), $arrVal[$arr['name']]) : forward_static_call_array(["HTML", 'AjustaHTMLDados'], [$arr['name'], $arrVal]); ?>
+                                                    </td>
+                                                <?php endforeach; ?>
+                                                    <td>
+                                                        <div class="btn-group">
+                                                            <?php foreach ($this->arrTableAction as $arr): ?>
+                                                                <a class="btn-white btn btn-xs" href="<?= forward_static_call_array(["HTML", $arr['method']], [$arr['href'], $arrVal]); ?>">
+                                                                    <?= $arr['caption']; ?>
+                                                                </a>
+                                                            <?php endforeach; ?>
+                                                        </div>
+                                                    </td>
+                                            </tr>
+                                        <?php endforeach; ?>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    <?php
+        <?php
+    }
+
+
+    public function Cadastro() {
+        ?>
+        <div>
+            <div class="ibox">
+                <div class="ibox-content">
+                    <div class="ibox-header">
+                        <span class="ibox-title"><?= $this->legend; ?></span>
+                    </div>
+                    <div class="ibox-body">
+                        <form name="form" id="formCadastro" class="inline-content" action="<?= $this->action?>?acao=<?= $this->acao ?>" method="POST" novalidate>
+                            <div class="inline-body">
+                                <?php
+                                foreach ($this->arrForm as $arr):
+                                    echo forward_static_call_array(["HTML", $arr['method']], $arr['arg']);
+                                endforeach;
+                                ?>
+                            </div>
+                            <hr/>
+                            <div class="inline-footer">
+                                <span class="legenda-obrigatorio"><span>*</span>&nbsp;Campos de preenchimento obrigatório</span>
+                                <div class="ibox-buttons">
+                                    <a class="btn btn-primary btn-outline"  href="<?= $this->action?>">Voltar</a>
+                                    <?php
+                                        if ($this->acao <> 'r'):
+                                            echo  HTML::AddButton('submit', 'btnSubmit', $this->arrLabelAcao[$this->acao], ['class'=>'btn btn-primary']);
+                                        endif;
+                                    ?>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <?php
+    }
+
+    public function AddTable($name, $caption, $attrTh = [], $attrTd = []) {
+        $this->arrTable[] = [
+            'name'=>$name,
+            'arg'=>[
+                'caption'=>$caption,
+                'attrTh'=>$attrTh,
+                'attrTd'=>$attrTd
+            ]
+        ];
+    }
+
+    public function AddTableAction($caption, $href, $flPermissao = true) {
+        if ($flPermissao) {
+            $this->arrTableAction[] = [
+                'method'=>'AjustaHTMLDados',
+                'caption'=>$caption,
+                'href'=>$href
+            ];
+        }
+    }
+
+    public function SetCamposSQL($arrCamposSQL) {
+        $this->arrCamposSQL = $arrCamposSQL;
+    }
+
+    private function AjustaCamposSQL() {
+        $dados = [];
+
+        foreach ($this->arrCamposSQL as $key => $value) {
+            if (is_numeric($key)) {
+                $dados[$value] = $_POST[$value] ?? null;
+            } else if ($this->acao == 'c') {
+                $dados[$key] = $value;
+            }
+        }
+
+        return $dados;
+    }
+
+    public function Show() {
+
+        if (array_key_exists('btnSubmit', $_POST)) {
+            $dados = $this->AjustaCamposSQL();
+
+            switch ($_GET['acao']) {
+                case 'c':
+                    $dados[$this->chave] = Database::BuscaMaxSequencia($this->nmTabela);
+                    Database::Insere($this->nmTabela, $dados);
+                    $dados['id'] = $dados[$this->chave];
+                    break;
+                case 'u':
+                    Database::Edita($this->nmTabela, $dados, [$this->chave=>$this->id]);
+                    break;
+                case 'd':
+                    $dados[$this->chave] = $this->id;
+                    Database::Deleta($this->nmTabela, [$this->chave=>$this->id]);
+                    break;
+            }
+
+            header('location:'.$this->action);
+        }
+
+        if (!array_key_exists('acao', $_GET)) {
+            $this->Table();
+        } else if (array_key_exists('acao', $_GET)) {
+            $this->Cadastro();
+        }
     }
 }
 ?>

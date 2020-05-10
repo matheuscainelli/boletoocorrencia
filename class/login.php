@@ -92,11 +92,13 @@ class Login {
 
             Database::ConnectaBD();
 
-            $arrBinds = array(':SGLOGIN'=>array($user, 'PARAM_STR'),
-                              ':SENHA'=>array($pass, 'PARAM_STR'));
+            $arrBinds = array(':SGUSUARIO'=>array($user, 'PARAM_STR'),
+                              ':PWUSUARIO'=>array($pass, 'PARAM_STR'));
+
             $sql = "SELECT pa.IDUSUARIO, pa.NMUSUARIO
                     FROM usuario pa
-                    WHERE pa.SGLOGIN = :SGLOGIN  AND pa.DSSENHA = :SENHA";
+                    WHERE pa.SGUSUARIO = :SGUSUARIO  AND pa.PWUSUARIO = :PWUSUARIO";
+
             $result = Database::ExecutaSQLDados($sql, $arrBinds);
 
             if (array_key_exists(0, $result)) {
