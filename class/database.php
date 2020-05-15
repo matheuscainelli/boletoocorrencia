@@ -183,15 +183,6 @@ class Database {
         return $sql;
     }
 
-    public static function TransactionStart() {
-        Database::ExecutaSQL("SET SESSION AUTOCOMMIT = 0");
-    }
-
-    public static function TransactionCommit() {
-        Database::ExecutaSQL("COMMIT");
-        Database::ExecutaSQL("SET SESSION AUTOCOMMIT = 1");
-    }
-
     public static function ExecutaSQL($sql, $arrBinds = []) {
         Database::AjustaSQLBinds($sql, $arrBinds);
         $stmt = Database::$conn->prepare($sql);

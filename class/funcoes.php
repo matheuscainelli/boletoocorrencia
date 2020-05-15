@@ -177,3 +177,47 @@ function FormataValorUsuario($tpCampo, $val) {
         return $val;
     }
 }
+
+function VerificaAcesso() {
+    Database::ConnectaBD();
+    Session::Start();
+
+    if (!array_key_exists('SGUSUARIO', Session::GetAll())) {
+        header('location: login.php');
+        exit;
+    }
+
+    return true;
+}
+
+function MenuCria($label, $htmlItens = '', $link = '#', $submenu = false, $attrLink = array()) {
+    $menu = '';
+
+    if ($htmlItens or $link != '#') {
+        $menu .= "<li>";
+            $menu .= "<a href='$link'>";
+                if (!$submenu) {
+                    $icon = substr($label, 0, strrpos($label, '>')+1);
+                    $label = substr($label, strrpos($label, '>')+1);
+                    $menu .= "$icon<span class='nav-label'>$label</span>";
+                } else {
+                    $menu .= $label;
+                }
+
+                $menu .= "<span class='fa arrow'></span>";
+            $menu .= "</a>";
+            if ($htmlItens != '')
+                $menu .= "<ul class='nav ".(!$submenu ? 'nav-second-level' : 'nav-third-level')." collapse'>$htmlItens</ul>";
+        $menu .= "</li>";
+    }
+
+    if ($submenu)
+        return $menu;
+    else
+        echo $menu;
+}
+
+function MontaMenuPermissao($nome, $link, $permissao) {
+    if ($permissao == 'S')
+       return "<li><a href='$link'>$nome</a></li>";
+}

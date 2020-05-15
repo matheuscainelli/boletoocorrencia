@@ -15,6 +15,7 @@ class Form {
     protected $arrCamposSQL = [];
     protected $arrValidaPermissao = ['c'=>true, 'r'=>true, 'u'=>true, 'd'=>true];
     private $arrBinds = [];
+    public $HabilitaAnexo = false;
 
     function __construct($permissao, $legend) {
         Database::ConnectaBD();
@@ -54,8 +55,10 @@ class Form {
             }
     
             $this->arrDados = Database::ExecutaSqlDados($this->sql, $this->arrBinds);
-    
-            $this->arrDados = $this->arrDados[0];
+
+            if (array_key_exists(0, $this->arrDados)) {
+                $this->arrDados = $this->arrDados[0];
+            }
         }
     }
 
@@ -168,37 +171,39 @@ class Form {
                     <div class="ibox-body">
                         <div class="inline-content">
                             <div class="inline-body">
-                                <table id="tableCadastro" class="table table-striped table-bordered table-hover">
-                                    <thead>
-                                        <tr>
-                                            <?php foreach ($this->arrTable as $arr): ?>
-                                                <th <?= HTML::MontaAttrHtml($arr['arg']['attrTh']); ?> ><?= $arr['arg']['caption']; ?></th>
-                                            <?php endforeach; ?>
-                                                <th class="no-sort" width="1px">Ações</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <?php foreach ($dados as $arrVal): ?>
+                                <div class="table-responsive">
+                                    <table id="tableCadastro" class="table table-striped table-bordered table-hover">
+                                        <thead>
                                             <tr>
-                                                <?php
-                                                    foreach ($this->arrTable as $arr): ?>
-                                                    <td <?= HTML::MontaAttrHtml($arr['arg']['attrTd'])?>>
-                                                <?= array_key_exists($arr['name'], $arrVal) ? FormataValorUsuario(substr($arr['name'], 0, 2), $arrVal[$arr['name']]) : forward_static_call_array(["HTML", 'AjustaHTMLDados'], [$arr['name'], $arrVal]); ?>
-                                                    </td>
+                                                <?php foreach ($this->arrTable as $arr): ?>
+                                                    <th <?= HTML::MontaAttrHtml($arr['arg']['attrTh']); ?> ><?= $arr['arg']['caption']; ?></th>
                                                 <?php endforeach; ?>
-                                                    <td>
-                                                        <div class="btn-group">
-                                                            <?php foreach ($this->arrTableAction as $arr): ?>
-                                                                <a class="btn-white btn btn-xs" href="<?= forward_static_call_array(["HTML", $arr['method']], [$arr['href'], $arrVal]); ?>">
-                                                                    <?= $arr['caption']; ?>
-                                                                </a>
-                                                            <?php endforeach; ?>
-                                                        </div>
-                                                    </td>
+                                                    <th class="no-sort" width="1px">Ações</th>
                                             </tr>
-                                        <?php endforeach; ?>
-                                    </tbody>
-                                </table>
+                                        </thead>
+                                        <tbody>
+                                            <?php foreach ($dados as $arrVal): ?>
+                                                <tr>
+                                                    <?php
+                                                        foreach ($this->arrTable as $arr): ?>
+                                                        <td <?= HTML::MontaAttrHtml($arr['arg']['attrTd'])?>>
+                                                    <?= array_key_exists($arr['name'], $arrVal) ? FormataValorUsuario(substr($arr['name'], 0, 2), $arrVal[$arr['name']]) : forward_static_call_array(["HTML", 'AjustaHTMLDados'], [$arr['name'], $arrVal]); ?>
+                                                        </td>
+                                                    <?php endforeach; ?>
+                                                        <td>
+                                                            <div class="btn-group">
+                                                                <?php foreach ($this->arrTableAction as $arr): ?>
+                                                                    <a class="btn-white btn btn-xs" href="<?= forward_static_call_array(["HTML", $arr['method']], [$arr['href'], $arrVal]); ?>">
+                                                                        <?= $arr['caption']; ?>
+                                                                    </a>
+                                                                <?php endforeach; ?>
+                                                            </div>
+                                                        </td>
+                                                </tr>
+                                            <?php endforeach; ?>
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -218,7 +223,7 @@ class Form {
                         <span class="ibox-title"><?= $this->legend; ?></span>
                     </div>
                     <div class="ibox-body">
-                        <form name="form" id="formCadastro" class="inline-content" action="<?= $this->action?>?acao=<?= $this->acao ?>&id=<?=$this->id?>" method="POST" novalidate>
+                        <form name="form" id="formCadastro" class="inline-content" action="<?= $this->action?>?acao=<?= $this->acao ?>&id=<?=$this->id?>" method="POST">
                             <div class="inline-body">
                                 <?php
                                 foreach ($this->arrForm as $arr):
@@ -233,6 +238,12 @@ class Form {
                                     <a class="btn btn-primary btn-outline"  href="<?= $this->action?>">Voltar</a>
                                     <?php
                                         if ($this->acao <> 'r'):
+                                            if ($this->HabilitaAnexo):
+                                                echo HTML::AddInput('file', 'ANEXOOCORRENCIA[]', null, ['multiple'=>true, 'style'=>'display:none', 'accept'=>"image/*"]);
+                                                echo HTML::AddButton('button', 'btnAnexoOcorrencia', "<i class='far fa-paperclip'></i>&nbsp;Anexos", ['class'=>'btn btn-primary', 'onclick'=>"$('#btnAnexoOcorrencia').siblings(':file').click()"]);
+                                                echo HTML::AddButton('button', 'btnDetalheAnexoOcorrencia', "<i class='fas fa-caret-up'></i>", ['class'=>'btn btn-primary dropdown-toggle', 'data-togle'=>'dropdown', 'aria-haspopup'=>true, 'aria-expanded'=>false]);
+                                                echo "<ul class='dropdown-menu dropdown-menu-right'></ul>";
+                                            endif;
                                             echo  HTML::AddButton('submit', 'btnSubmit', $this->arrLabelAcao[$this->acao], ['class'=>'btn btn-primary']);
                                         endif;
                                     ?>
@@ -285,11 +296,20 @@ class Form {
         return $dados;
     }
 
+    public function HabilitaAnexo($habilita) {
+        $this->HabilitaAnexo = $habilita;
+    }
+
+    private function CarregaScript($arquivo, $arquivoReal = null) {
+        $arquivoReal = $arquivoReal ? $arquivoReal : $arquivo;
+        $modified = filemtime($arquivoReal); // previne o cache
+        return "\t<script type='text/javascript' src='$arquivo?t=$modified'></script>\n";
+    }
+
     public function Show() {
        $this->SetDados();
         if (array_key_exists('btnSubmit', $_POST)) {
             $dados = $this->AjustaCamposSQL();
-
             switch ($_GET['acao']) {
                 case 'c':
                     $dados[$this->chave] = Database::BuscaMaxSequencia($this->nmTabela);
@@ -312,6 +332,7 @@ class Form {
             $this->Table();
         } else if (array_key_exists('acao', $_GET)) {
             $this->Cadastro();
+            echo $this->CarregaScript('js/ocorrencia.js');
         }
     }
 }

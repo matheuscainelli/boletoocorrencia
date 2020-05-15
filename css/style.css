@@ -160,7 +160,7 @@ h5 {
     display: inline-flex;
 }
 .nav > li > a {
-  color: #a7b1c2;
+  color: var(--corTerciaria);
   font-weight: 600;
   padding: 14px 20px 14px 25px;
 }
@@ -168,15 +168,15 @@ h5 {
   color: #999c9e;
 }
 .nav > li.active > a {
-  color: #ffffff;
+  color: var(--corTerciaria);
 }
 .navbar-default .nav > li > a {
   padding: 12px 18px 12px 22px;
 }
 .navbar-default .nav > li > a:hover,
 .navbar-default .nav > li > a:focus {
-  background-color: #555D55;
-  color: white;
+  background-color: var(--corSecundaria);
+  color: var(--corTerciaria);
 }
 .nav .open > a,
 .nav .open > a:hover,
@@ -388,11 +388,11 @@ a.cke_button_off:active {
   transition: all 0.4s;
 }
 ul.nav-second-level {
-  background: #555d55;
+  background: var(--corSecundaria);
 }
 .nav > li.active {
-  border-left: 4px solid #64c832;
-  background: #555d55;
+  border-left: 4px solid var(--corTerciaria);
+  background: var(--corSecundaria);
 }
 .nav.nav-second-level.collapse[style] {
   height: auto !important;
@@ -822,7 +822,7 @@ body.mini-navbar .navbar-default .nav > li > .nav-second-level li a {
   position: absolute;
   left: 70px;
   top: 0;
-  background-color: #555D55;
+  background-color: var(--corSecundaria);
   padding: 10px 10px 10px 10px;
   font-size: 12px;
 }
@@ -995,7 +995,7 @@ body.canvas-menu .logo-element {
 }
 body.mini-navbar .nav-header {
   padding: 0;
-  background-color: #1ab394;
+  background-color: var(--corPrincipal);
 }
 body.canvas-menu .nav-header {
   padding: 33px 25px;
@@ -2401,6 +2401,7 @@ table.dataTable {
 div.dataTables_wrapper div.dataTables_filter,
 div.dataTables_wrapper div.dataTables_length {
     margin-bottom: 5px;
+    margin-top: 5px !important;
 }
 div.dataTables_wrapper div.dataTables_paginate {
     margin-top: 3px;

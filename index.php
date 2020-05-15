@@ -1,3 +1,3 @@
 <?php
-print('logou');
+    require 'ocorrencia.php';
 ?>

@@ -5,10 +5,10 @@ require 'class/database.php';
 require 'class/session.php';
 
 class Login {
-    private $usuario;
-    private $idusuario;
+    private $arrDadosUsuario = [];
 
     function __construct() {
+        Session::Start();
         $this->SetJS('js/jquery-3.4.1.min');
         $this->SetJS('js/bootstrap.min');
         $this->SetCSS('css/bootstrap');
@@ -26,7 +26,7 @@ class Login {
         $this->arrJS[] = ["$dsPath.js?t=".filemtime("$dsPath.js"), $arrAttr];
     }
 
-    public function View() {
+    private function View() {
         ?>
         <!DOCTYPE html>
         <html>
@@ -75,8 +75,10 @@ class Login {
 
     private function ConfiguraSession(){
         Session::Start();
-        Session::Set('IDUSUARIO', $this->idusuario);
-        Session::Set('NMUSUARIO', $this->usuario);
+
+        foreach ($this->arrDadosUsuario as $key => $val) {
+            Session::Set($key, $val);
+        }
     }
 
     public function Logout() {
@@ -84,7 +86,18 @@ class Login {
     }
 
     public function Submit() {
-        Login::view();
+        if (array_key_exists('logout', $_GET)) {
+            Login::Logout();
+            header('location: login.php');
+            exit;
+        }
+
+        if (array_key_exists('SGUSUARIO', Session::GetAll())) {
+            header('location: index.php');
+            exit;
+        }
+
+        Login::View();
 
         if (isset($_POST['btnSubmit'])) {
             $user = $_POST['login'];
@@ -95,18 +108,17 @@ class Login {
             $arrBinds = array(':SGUSUARIO'=>array($user, 'PARAM_STR'),
                               ':PWUSUARIO'=>array($pass, 'PARAM_STR'));
 
-            $sql = "SELECT pa.IDUSUARIO, pa.NMUSUARIO
+            $sql = "SELECT pa.IDUSUARIO, pa.NMUSUARIO, pa.SGUSUARIO
                     FROM usuario pa
                     WHERE pa.SGUSUARIO = :SGUSUARIO  AND pa.PWUSUARIO = :PWUSUARIO AND pa.FLATIVO = 'S'";
-            $result = Database::ExecutaSQLDados($sql, $arrBinds);
+            $this->arrDadosUsuario = Database::ExecutaSQLDados($sql, $arrBinds);
 
-            if (array_key_exists(0, $result)) {
-                $this->usuario = $result[0]['NMUSUARIO'];
-                $this->idusuario = $result[0]['IDUSUARIO'];
-
+            if (array_key_exists(0, $this->arrDadosUsuario)) {
+                $this->arrDadosUsuario = $this->arrDadosUsuario[0];
                 $this->ConfiguraSession();
 
                 header('location: index.php');
+                exit;
             } else {
                 echo HTML::AddAlerta('warning', 'Atenção! Usuário não cadastrado');
             }
