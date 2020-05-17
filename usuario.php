@@ -1,10 +1,6 @@
 <?php
 require 'header.php';
 
-$sql = "SELECT pe.IDPERFIL, pe.NMPERFIL
-        FROM perfil pe";
-$arrPerfil = Database::MontaArraySelect($sql, [], 'IDPERFIL', 'NMPERFIL');
-
 $sql = "SELECT pa.*, pe.NMPERFIL
         FROM usuario pa
         JOIN perfil pe ON pa.IDPERFIL = pe.IDPERFIL
@@ -24,7 +20,7 @@ $form->AddInput('text', 'IDUSUARIO', 'Sequencial', ['readonly'=>true, 'class'=>"
 $form->AddInput('text', 'NMUSUARIO', 'Nome', ['required'=>true, 'class'=>"form-control input-sm"], ['class'=>$form->GetLargura(3)]);
 $form->AddInput('text', 'SGUSUARIO', 'Sigla', ['required'=>true, 'class'=>"form-control input-sm"], ['class'=>$form->GetLargura(3)]);
 $form->AddInput('password', 'PWUSUARIO', 'Senha', ['required'=>true, 'class'=>"form-control input-sm"], ['class'=>$form->GetLargura(3)]);
-$form->AddSelect('IDPERFIL', 'Pefil', $arrPerfil, ['required'=>true, 'placeholder'=>"Selecione:", 'data-width'=>"100%", 'class'=>"form-control input-sm"], ['class'=>$form->GetLargura(2)]);
+$form->AddSelect('IDPERFIL', 'Pefil', BuscaArrPerfil(), ['required'=>true, 'placeholder'=>"Selecione:", 'data-width'=>"100%", 'class'=>"form-control input-sm"], ['class'=>$form->GetLargura(2)]);
 $form->AddSelect('FLATIVO', 'Ativo', ['S'=>'Sim', 'N'=>'Não'], ['required'=>true, 'placeholder'=>"Selecione:", 'data-width'=>"100%", 'class'=>"form-control input-sm"], ['class'=>$form->GetLargura(2)]);
 $form->Show();
 require 'footer.php';

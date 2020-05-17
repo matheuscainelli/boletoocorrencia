@@ -110,7 +110,7 @@ class Form {
 
     public function AddTextArea($name, $caption = null, $attrTextArea = [], $attrDiv = [], $attrLabel = []) {
         $this->SetDados();
-        $attrInput['value'] = $this->arrDados[$name] ?? ($attrInput['value'] ?? null);
+        $attrTextArea['value'] = $this->arrDados[$name] ?? NULL;
 
         if (in_array($this->acao, ['r', 'd'])) {
             $attrTextArea['disabled'] = true;

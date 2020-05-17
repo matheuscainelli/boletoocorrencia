@@ -179,6 +179,8 @@ function FormataValorUsuario($tpCampo, $val) {
 }
 
 function VerificaAcesso() {
+    date_default_timezone_set('America/Sao_Paulo');
+
     Database::ConnectaBD();
     Session::Start();
 
@@ -190,7 +192,7 @@ function VerificaAcesso() {
     return true;
 }
 
-function MenuCria($label, $htmlItens = '', $link = '#', $submenu = false, $attrLink = array()) {
+function MenuCria($label, $htmlItens = '', $link = '#', $submenu = false) {
     $menu = '';
 
     if ($htmlItens or $link != '#') {
@@ -220,4 +222,56 @@ function MenuCria($label, $htmlItens = '', $link = '#', $submenu = false, $attrL
 function MontaMenuPermissao($nome, $link, $permissao) {
     if ($permissao == 'S')
        return "<li><a href='$link'>$nome</a></li>";
+}
+
+function GetDataHoraAtual(){
+    return date('d/m/Y H:i:s');
+}
+
+function BuscaArrTipoOcorrencia() {
+    $sql = "SELECT pa.IDTIPOOCORRENCIA, pa.NMOCORRENCIA
+            FROM tipoocorrencia pa
+            WHERE TRUE";
+
+    return Database::MontaArraySelect($sql, [], 'IDTIPOOCORRENCIA', 'NMOCORRENCIA');
+}
+
+function BuscaArrVigilante() {
+    $sql = "SELECT pa.IDVIGILANTE, pa.NMVIGILANTE
+            FROM vigilante pa
+            WHERE TRUE";
+
+    return Database::MontaArraySelect($sql, [], 'IDVIGILANTE', 'NMVIGILANTE');
+}
+
+function BuscaArrArea() {
+    $sql = "SELECT pa.IDAREA, pa.NMAREA
+            FROM area pa
+            WHERE TRUE";
+
+    return Database::MontaArraySelect($sql, [], 'IDAREA', 'NMAREA');
+}
+
+function BuscaArrPosto() {
+    $sql = "SELECT pa.IDPOSTO, pa.NMPOSTO
+            FROM posto pa
+            WHERE TRUE";
+
+    return Database::MontaArraySelect($sql, [], 'IDPOSTO', 'NMPOSTO');
+}
+
+function BuscaArrPerfil() {
+    $sql = "SELECT pe.IDPERFIL, pe.NMPERFIL
+            FROM perfil pe";
+
+    return Database::MontaArraySelect($sql, [], 'IDPERFIL', 'NMPERFIL');
+}
+
+function BuscaArrPostoArea() {
+    $sql = "SELECT pa.IDPOSTOAREA, concat(po.NMPOSTO, ' - ', a.NMAREA) NMPOSTOAREA
+            FROM postoarea pa
+            JOIN area a ON pa.IDAREA = a.IDAREA
+            JOIN posto po ON pa.IDPOSTO = pa.IDPOSTO";
+    
+    return Database::MontaArraySelect($sql, [], 'IDPOSTOAREA', 'NMPOSTOAREA');
 }

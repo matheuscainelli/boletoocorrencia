@@ -1,6 +1,5 @@
 <?php
-print(ini_get('session_save_path'));
-die();
+session_start();
 ob_start();
 require 'config/config.php';
 require 'class/html.php';
@@ -27,13 +26,17 @@ VerificaAcesso();
             <script src="js/jquery.slimscroll.min.js"></script>
             <script src="summernote/summernote.js"></script>
             <script src="summernote/lang/summernote-pt-BR.js"></script>
+            <script src="datepicker/bootstrap-datepicker.js"></script>
+            <script src="datepicker/locales/bootstrap-datepicker.pt-BR.min.js"></script>
 
+            <link rel="icon" type="imagem/png" href="img/icon.png" />
             <link rel="stylesheet" href="css/bootstrap.css"/>
             <link rel="stylesheet" href="font-awesome/css/font-awesome.css"/>
             <link rel="stylesheet" href="css/estilos.css"/>
             <link rel="stylesheet" href="css/style.css"/>
             <link rel="stylesheet" href="datatables/datatables.min.css"/>
             <link rel="stylesheet" href="summernote/summernote.css">
+            <link rel="stylesheet" href="datepicker/datepicker.css ">
         </head>
 
         <script type="text/javascript">
@@ -84,11 +87,16 @@ VerificaAcesso();
                             </li>
                             <?php
                                 MenuCria('<i class="fa fa-edit"></i>Cadastros',
+                                    MontaMenuPermissao('Área', 'area.php', true).
                                     MontaMenuPermissao('Pefil', 'perfil.php', true).
-                                    MontaMenuPermissao('Usuário', 'usuario.php', true)
+                                    MontaMenuPermissao('Posto Área', 'postoarea.php', true).
+                                    MontaMenuPermissao('Posto', 'posto.php', true).
+                                    MontaMenuPermissao('Tipo Ocorrência', 'tipoocorrencia.php', true).
+                                    MontaMenuPermissao('Usuário', 'usuario.php', true).
+                                    MontaMenuPermissao('Vigilante', 'vigilante.php', true)
                                 );
                                 MenuCria('<i class="fa fa-wrench"></i>Tarefas',
-                                    MontaMenuPermissao('Ocorrências', 'ocorrencia.php', true)
+                                    MontaMenuPermissao('Ocorrências', 'index.php', true)
                                 );
                                 MenuCria('<i class="fa fa-search"></i>Cadastros',
                                 );

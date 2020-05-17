@@ -7,8 +7,8 @@ require 'class/session.php';
 class Login {
     private $arrDadosUsuario = [];
 
-    function __construct() {
-        Session::Start();
+    function __construct()  {       
+        Database::ConnectaBD();
         $this->SetJS('js/jquery-3.4.1.min');
         $this->SetJS('js/bootstrap.min');
         $this->SetCSS('css/bootstrap');
@@ -34,6 +34,7 @@ class Login {
                 <meta charset="utf-8">
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
                 <meta http-equiv="X-UA-Compatible" content="IE=edge">
+                <link rel="icon" type="imagem/png" href="img/icon.png" />
                 <title><?= nmSistema; ?></title>
                 <?php foreach ($this->arrCSS as $arr): ?>
                     <link rel="stylesheet" href="<?= $arr[0]; ?>" <?= !empty($arr[1]) ? HTML::MontaAttrHtml($arr[1]) : null; ?>/>
@@ -73,9 +74,8 @@ class Login {
         <?php
     }
 
-    private function ConfiguraSession(){
-        Session::Start();
-
+    private function ConfiguraSession() {
+        session_start();
         foreach ($this->arrDadosUsuario as $key => $val) {
             Session::Set($key, $val);
         }
@@ -102,9 +102,6 @@ class Login {
         if (isset($_POST['btnSubmit'])) {
             $user = $_POST['login'];
             $pass = $_POST['password'];
-
-            Database::ConnectaBD();
-
             $arrBinds = array(':SGUSUARIO'=>array($user, 'PARAM_STR'),
                               ':PWUSUARIO'=>array($pass, 'PARAM_STR'));
 
