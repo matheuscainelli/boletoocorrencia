@@ -57,7 +57,7 @@ class Login {
                     <div id="divLogin" class="col-md-5">
                         <div>
                             <h3>Logar no sistema</h3>
-                            <form id="formLogin" class="inline-content" action='#' method="POST" class="m-t">
+                            <form id="formLogin" class="inline-content" action='' method="POST" class="m-t">
                                 <div class="inline-body">
                                     <?= HTML::AddInput('text', 'login', null, ['class'=>'form-control input-sm m-b', 'placeholder'=>'Usuário', 'autofocus'=>true, 'required'=>true]); ?>
                                     <?= HTML::AddInput('password', 'password', null, ['class'=>'form-control input-sm m-b', 'placeholder'=>'Senha', 'required'=>true]); ?>
