@@ -6,6 +6,7 @@ require 'class/html.php';
 require 'class/database.php';
 require 'class/session.php';
 require 'class/form.php';
+require 'class/filter.php';
 require_once 'class/funcoes.php';
 
 VerificaAcesso();
@@ -99,6 +100,7 @@ VerificaAcesso();
                                     MontaMenuPermissao('Ocorrências', 'index.php', true)
                                 );
                                 MenuCria('<i class="fa fa-search"></i>Cadastros',
+                                    MontaMenuPermissao('Relatório Gerencial', 'relatorio.php', true)
                                 );
                             ?>
                         </ul>

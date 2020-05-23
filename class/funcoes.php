@@ -111,7 +111,7 @@ function FormataDataHoraUsuario($dataHora) {
         $arrDataHora = explode(' ', $dataHora);
         $data = FormataDataUsuario($arrDataHora[0]);
         if (isset($data)) {
-            return substr($data.' '.$arrDataHora[1], 0, 16);
+            return substr($data.' '.$arrDataHora[1], 0, 20);
         }
     }
 }

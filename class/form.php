@@ -29,7 +29,6 @@ class Form {
 
     public function setAction($action) {
         $this->action = $action;
-        $this->redirectSubmit = $action;
     }
 
     public function VerificaParam($param) {
