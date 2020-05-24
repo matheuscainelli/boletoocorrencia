@@ -105,8 +105,9 @@ class Login {
             $arrBinds = array(':SGUSUARIO'=>array($user, 'PARAM_STR'),
                               ':PWUSUARIO'=>array($pass, 'PARAM_STR'));
 
-            $sql = "SELECT pa.IDUSUARIO, pa.NMUSUARIO, pa.SGUSUARIO
+            $sql = "SELECT pa.IDUSUARIO, pa.NMUSUARIO, pa.SGUSUARIO, pe.IDPERFIL
                     FROM usuario pa
+                    JOIN perfil pe ON pa.IDPERFIL = pe.IDPERFIL
                     WHERE pa.SGUSUARIO = :SGUSUARIO  AND pa.PWUSUARIO = :PWUSUARIO AND pa.FLATIVO = 'S'";
             $this->arrDadosUsuario = Database::ExecutaSQLDados($sql, $arrBinds);
 

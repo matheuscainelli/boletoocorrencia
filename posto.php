@@ -5,7 +5,7 @@ $sql = "SELECT pa.*
         FROM posto pa
 		WHERE TRUE";
 
-$form = new Form(TRUE, "Posto");
+$form = new Form(ConsultaPermissao('CAD_POSTO'), "Posto");
 $form->SetSql($sql, 'posto', 'IDPOSTO');
 $form->SetCamposSQL(['IDPOSTO', 'NMPOSTO']);
 

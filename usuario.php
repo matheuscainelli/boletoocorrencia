@@ -6,7 +6,7 @@ $sql = "SELECT pa.*, pe.NMPERFIL
         JOIN perfil pe ON pa.IDPERFIL = pe.IDPERFIL
         WHERE TRUE";
 
-$form = new Form(TRUE, "Usuário");
+$form = new Form(ConsultaPermissao('CAD_USUARIO'), "Usuário");
 $form->SetSql($sql, 'usuario', 'IDUSUARIO');
 $form->SetCamposSQL(['IDUSUARIO', 'NMUSUARIO', 'SGUSUARIO', 'PWUSUARIO', 'FLATIVO', 'IDPERFIL']);
 

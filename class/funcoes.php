@@ -272,6 +272,57 @@ function BuscaArrPostoArea() {
             FROM postoarea pa
             JOIN area a ON pa.IDAREA = a.IDAREA
             JOIN posto po ON pa.IDPOSTO = pa.IDPOSTO";
-    
     return Database::MontaArraySelect($sql, [], 'IDPOSTOAREA', 'NMPOSTOAREA');
+}
+
+function GetPerfilPermissao ($idPefil) {
+    $arrBinds = [':IDPERFIL'=>[$idPefil, 'PARAM_INT']];
+
+    $sql = "SELECT pa.IDPERMISSAO, pa.NMPERMISSAO, pp.FLCONSULTA
+            FROM permissao pa
+            LEFT JOIN perfilpermissao pp ON pp.IDPERMISSAO= pa.IDPERMISSAO AND pp.IDPERFIL = :IDPERFIL
+            ORDER BY 2";
+  
+    return Database::ExecutaSQLDados($sql, $arrBinds);
+}
+
+function ValidaCheckbox($flPermissao) {
+    return $flPermissao == 'S';
+}
+
+function GetNomePerfil($idPefil) {
+    $arrBinds = [':IDPERFIL'=>[$idPefil, 'PARAM_INT']];
+
+    $sql = "SELECT pe.NMPERFIL
+            FROM perfil pe
+            WHERE pe.IDPERFIL = :IDPERFIL";
+    $perfil = Database::ExecutaSQLDados($sql, $arrBinds);
+
+    return $perfil[0]['NMPERFIL'];
+}
+
+function ConsultaPermissao($siglaPermissao, $tipoConsulta = 'S'){
+    $permissao = ValidaPermissao($siglaPermissao);
+
+    return substr($permissao, 0, 1) == 'S';
+}
+
+function ValidaPermissao($sgPermissao) {
+    $idPefil = Session::Get('IDPERFIL');
+
+    if (Session::Get('IDUSUARIO') == 0) {
+        return 'S';
+    }
+
+    $arrBinds = [':IDPERFIL'=>[$idPefil, 'PARAM_INT'],
+                 ':SGPERMISSAO'=>[$sgPermissao, 'PARAM_STR']];
+
+    $sql = "SELECT pu.FLCONSULTA
+            FROM permissao p
+            LEFT JOIN perfilpermissao pu ON pu.IDPERMISSAO = p.IDPERMISSAO and pu.IDPERFIL = :IDPERFIL
+            JOIN perfil pp ON pp.IDPERFIL = pu.IDPERFIL
+            WHERE p.SGPERMISSAO = :SGPERMISSAO";
+    $permissao = Database::ExecutaSQLDados($sql, $arrBinds);
+
+    return $permissao[0]['FLCONSULTA'];
 }

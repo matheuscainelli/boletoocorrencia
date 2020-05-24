@@ -33,6 +33,7 @@ VerificaAcesso();
             <link rel="icon" type="imagem/png" href="img/icon.png" />
             <link rel="stylesheet" href="css/bootstrap.css"/>
             <link rel="stylesheet" href="font-awesome/css/font-awesome.css"/>
+            <link rel="stylesheet" href="css/awesome-bootstrap-checkbox.css"/>
             <link rel="stylesheet" href="css/estilos.css"/>
             <link rel="stylesheet" href="css/style.css"/>
             <link rel="stylesheet" href="datatables/datatables.min.css"/>

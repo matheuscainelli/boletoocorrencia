@@ -18,6 +18,10 @@ class Form {
     public $HabilitaAnexo = false;
 
     function __construct($permissao, $legend) {
+        if (!$permissao) {
+            die("Sem Permissao");
+        }
+
         Database::ConnectaBD();
         $this->permissao = $permissao;
         $this->legend = $legend;

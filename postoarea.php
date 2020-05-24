@@ -7,7 +7,7 @@ $sql = "SELECT pa.*, po.NMPOSTO, a.NMAREA
         JOIN area a ON a.IDAREA = pa.IDAREA
 		WHERE TRUE";
 
-$form = new Form(TRUE, "Posto Área");
+$form = new Form(ConsultaPermissao('CAD_POSTOAREA'), "Posto Área");
 $form->SetSql($sql, 'postoarea', 'IDPOSTOAREA');
 $form->SetCamposSQL(['IDPOSTOAREA', 'IDPOSTO', 'IDAREA']);
 

@@ -9,7 +9,7 @@ $sql = "SELECT pa.*, tp.NMOCORRENCIA, vg.NMVIGILANTE, CONCAT(pt.NMPOSTO, ' - ', 
         JOIN posto pt ON po.IDPOSTO = pt.IDPOSTO
         JOIN area a ON po.IDAREA = a.IDAREA";
 
-$form = new Form(TRUE, "Ocorrências");
+$form = new Form(ConsultaPermissao('CAD_OCORRENCIA'), "Ocorrências");
 $form->SetSql($sql, 'ocorrencia', 'IDOCORRENCIA');
 $form->SetCamposSQL(['IDOCORRENCIA', 'IDTIPOOCORRENCIA', 'IDVIGILANTE', 'IDPOSTOAREA', 'DTOCORRENCIA', 'DSOCORRENCIA']);
 $form->HabilitaAnexo(true);

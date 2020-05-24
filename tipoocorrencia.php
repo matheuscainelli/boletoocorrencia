@@ -5,7 +5,7 @@ $sql = "SELECT pa.*
         FROM tipoocorrencia pa
 		WHERE TRUE";
 
-$form = new Form(TRUE, "Tipo Ocorrência");
+$form = new Form(ConsultaPermissao('CAD_TIPOOCORRENCIA'), "Tipo Ocorrência");
 $form->SetSql($sql, 'tipoocorrencia', 'IDTIPOOCORRENCIA');
 $form->SetCamposSQL(['IDTIPOOCORRENCIA', 'NMOCORRENCIA']);
 

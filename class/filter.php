@@ -12,6 +12,9 @@ class Filter {
     protected $arrTable = [];
 
     function __construct($permissao, $legend) {
+        if (!$permissao)
+            die("Sem permissão");
+
         Database::ConnectaBD();
         $this->permissao = $permissao;
         $this->legend = $legend;
