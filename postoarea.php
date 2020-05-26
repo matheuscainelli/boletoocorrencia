@@ -3,7 +3,7 @@ require 'header.php';
 
 $sql = "SELECT pa.*, po.NMPOSTO, a.NMAREA
         FROM postoarea pa
-        JOIN posto po ON pa.IDPOSTO = pa.IDPOSTO
+        JOIN posto po ON po.IDPOSTO = pa.IDPOSTO
         JOIN area a ON a.IDAREA = pa.IDAREA
 		WHERE TRUE";
 

@@ -4,7 +4,7 @@ require 'header.php';
 $sql = "SELECT pa.*, pe.NMPERFIL
         FROM usuario pa
         JOIN perfil pe ON pa.IDPERFIL = pe.IDPERFIL
-        WHERE TRUE";
+        WHERE pa.IDUSUARIO > 0";
 
 $form = new Form(ConsultaPermissao('CAD_USUARIO'), "Usuário");
 $form->SetSql($sql, 'usuario', 'IDUSUARIO');

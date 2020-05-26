@@ -100,7 +100,7 @@ VerificaAcesso();
                                 MenuCria('<i class="fa fa-wrench"></i>Tarefas',
                                     MontaMenuPermissao('Ocorrências', 'index.php', true)
                                 );
-                                MenuCria('<i class="fa fa-search"></i>Cadastros',
+                                MenuCria('<i class="fa fa-search"></i>Consultas',
                                     MontaMenuPermissao('Relatório Gerencial', 'relatorio.php', true)
                                 );
                             ?>

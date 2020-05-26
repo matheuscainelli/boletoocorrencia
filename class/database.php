@@ -79,7 +79,6 @@ class Database {
             Database::AjustaValorTypeBinds($key, $arr);
 
             if (substr($key, 1, 2) == 'IN') {
-                $keyOriginal = $key;
                 $arrBindsIn[$key] = [];
                 foreach (explode(',', $arr[0]) as $i => $val) {
                     $arrBinds[substr($key, 3).$i] = [$val, $arr[1]];
