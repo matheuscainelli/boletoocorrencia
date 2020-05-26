@@ -271,7 +271,8 @@ function BuscaArrPostoArea() {
     $sql = "SELECT pa.IDPOSTOAREA, concat(po.NMPOSTO, ' - ', a.NMAREA) NMPOSTOAREA
             FROM postoarea pa
             JOIN area a ON pa.IDAREA = a.IDAREA
-            JOIN posto po ON pa.IDPOSTO = pa.IDPOSTO";
+            JOIN posto po ON pa.IDPOSTO = po.IDPOSTO";
+
     return Database::MontaArraySelect($sql, [], 'IDPOSTOAREA', 'NMPOSTOAREA');
 }
 
