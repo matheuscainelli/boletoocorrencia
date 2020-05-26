@@ -15,7 +15,10 @@ class Form {
     protected $arrCamposSQL = [];
     protected $arrValidaPermissao = ['c'=>true, 'r'=>true, 'u'=>true, 'd'=>true];
     private $arrBinds = [];
-    public $HabilitaAnexo = false;
+    private $HabilitaAnexo = false;
+    private $tabelaAnexo = null;
+    private $chaveAnexo = null;
+    private $arrAnexo = [];
 
     function __construct($permissao, $legend) {
         if (!$permissao) {
@@ -156,6 +159,10 @@ class Form {
                 continue;
             }
 
+            if (in_array($tpPermissao, array('u', 'd')) && Session::Get('IDPERFIL') == 2) {
+                continue;
+            }
+
             $this->AddTableAction("<i class=\"fa ".$arrIconActionTable[$tpPermissao]." icon-form\" title=\"".$this->arrLabelAcao[$tpPermissao]."\"></i>", $this->action."?acao=$tpPermissao&id=:$this->chave:", $flPermissao);
         }
 
@@ -226,7 +233,7 @@ class Form {
                         <span class="ibox-title"><?= $this->legend; ?></span>
                     </div>
                     <div class="ibox-body">
-                        <form name="form" id="formCadastro" class="inline-content" action="<?= $this->action?>?acao=<?= $this->acao ?>&id=<?=$this->id?>" method="POST">
+                        <form name="form" id="formCadastro" class="inline-content" action="<?= $this->action?>?acao=<?= $this->acao ?>&id=<?=$this->id?>" method="POST" enctype = "multipart/form-data">
                             <div class="inline-body">
                                 <?php
                                 foreach ($this->arrForm as $arr):
@@ -244,8 +251,6 @@ class Form {
                                             if ($this->HabilitaAnexo):
                                                 echo HTML::AddInput('file', 'ANEXOOCORRENCIA[]', null, ['multiple'=>true, 'style'=>'display:none', 'accept'=>"image/*"]);
                                                 echo HTML::AddButton('button', 'btnAnexoOcorrencia', "<i class='far fa-paperclip'></i>&nbsp;Anexos", ['class'=>'btn btn-primary', 'onclick'=>"$('#btnAnexoOcorrencia').siblings(':file').click()"]);
-                                                echo HTML::AddButton('button', 'btnDetalheAnexoOcorrencia', "<i class='fas fa-caret-up'></i>", ['class'=>'btn btn-primary dropdown-toggle', 'data-togle'=>'dropdown', 'aria-haspopup'=>true, 'aria-expanded'=>false]);
-                                                echo "<ul class='dropdown-menu dropdown-menu-right'></ul>";
                                             endif;
                                             echo  HTML::AddButton('submit', 'btnSubmit', $this->arrLabelAcao[$this->acao], ['class'=>'btn btn-primary']);
                                         endif;
@@ -299,13 +304,41 @@ class Form {
         return $dados;
     }
 
-    public function HabilitaAnexo($habilita) {
+    public function HabilitaAnexo($habilita, $tabelaanexo, $chaveanexo) {
         $this->HabilitaAnexo = $habilita;
+        $this->tabelaAnexo = $tabelaanexo;
+        $this->chaveAnexo = $chaveanexo;
+    }
+
+    private function InsereAnexo() {
+        $arrArquivos = $_FILES['ANEXOOCORRENCIA'];
+
+        Database::Deleta($this->tabelaAnexo, [$this->chaveAnexo=>$this->id]);
+        $sequencial = Database::BuscaMaxSequencia($this->nmTabela);
+
+        for ($i = 0; $i < count($arrArquivos); $i++) {
+            if (array_key_exists($i, $arrArquivos['name']) <> NULL) {
+                $nmtemporario = $arrArquivos['tmp_name'][$i];
+        
+                $dsconteudo = file_get_contents($nmtemporario);
+        
+                $dados = array($this->chaveAnexo=>$sequencial,
+                              'IDOCORRENCIA'=>$this->id,
+                              'DSARQUIVO'=>base64_encode(gzcompress($dsconteudo)),
+                              'NRTAMANHOARQUIVO'=>$arrArquivos['size'][$i],
+                              'NMARQUIVO'=>$arrArquivos['name'][$i],
+                              'TPANEXO'=>$arrArquivos['type'][$i]);
+
+                Database::Insere($this->nmTabela, $dados);
+            }
+        }
+
+        unset($arrArquivos);
     }
 
     private function CarregaScript($arquivo, $arquivoReal = null) {
         $arquivoReal = $arquivoReal ? $arquivoReal : $arquivo;
-        $modified = filemtime($arquivoReal); // previne o cache
+        $modified = filemtime($arquivoReal);
         return "\t<script type='text/javascript' src='$arquivo?t=$modified'></script>\n";
     }
 
@@ -313,6 +346,11 @@ class Form {
        $this->SetDados();
         if (array_key_exists('btnSubmit', $_POST)) {
             $dados = $this->AjustaCamposSQL();
+
+            if (!empty($_FILES)) {
+                $this->InsereAnexo();
+            }
+
             switch ($_GET['acao']) {
                 case 'c':
                     $dados[$this->chave] = Database::BuscaMaxSequencia($this->nmTabela);

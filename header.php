@@ -64,9 +64,6 @@ VerificaAcesso();
                             ["view", ["codeview"]]
                         ],
                     });
-
-                    arrAnexo = [];
-                    $('#btnDetalheAnexoOcorrencia').toggle(false);
                 });
         </script>
         <body>

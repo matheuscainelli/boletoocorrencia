@@ -45,6 +45,10 @@ class Filter {
         ];
     }
 
+    private function GeraPDF() {
+
+    }
+
     public function Filtros() {
         ?>
         <div class="ibox">
@@ -62,6 +66,7 @@ class Filter {
                             ?>
                             <div class="ibox-buttons">
                                 <?= HTML::AddButton('submit', 'btnSubmit', "Filtrar", ['class'=>'btn btn-primary']); ?>
+                                <?= HTML::AddButton('submit', 'btnPDF', "Exportar PDF", ['class'=>'btn btn-primary']); ?>
                             </div>
                         </div>
                     </form>
@@ -73,6 +78,10 @@ class Filter {
 
     public function Show() {
         $this->Filtros();
+
+        if (array_key_exists('btnPDF', $_POST)) {
+            $this->GeraPDF();
+        }
      }
 }
 
