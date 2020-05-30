@@ -1,5 +1,7 @@
 <?php
 require 'header.php';
+$filtro = " AND pa.IDUSUARIOINC = ".$_SESSION['IDUSUARIO'];
+$filtro .= " AND DATE_FORMAT(pa.DTOCORRENCIA , '%d/%m/%Y') = DATE_FORMAT(CURRENT_TIMESTAMP() , '%d/%m/%Y')";
 
 $sql = "SELECT pa.*, tp.NMOCORRENCIA, vg.NMVIGILANTE, CONCAT(pt.NMPOSTO, ' - ', a.NMAREA) NMPOSTOAREA
         FROM ocorrencia pa
@@ -7,7 +9,8 @@ $sql = "SELECT pa.*, tp.NMOCORRENCIA, vg.NMVIGILANTE, CONCAT(pt.NMPOSTO, ' - ', 
         JOIN vigilante vg ON pa.IDVIGILANTE = vg.IDVIGILANTE
         JOIN postoarea po ON pa.IDPOSTOAREA = po.IDPOSTOAREA
         JOIN posto pt ON po.IDPOSTO = pt.IDPOSTO
-        JOIN area a ON po.IDAREA = a.IDAREA";
+        JOIN area a ON po.IDAREA = a.IDAREA
+        WHERE TRUE $filtro";
 
 $form = new Form(ConsultaPermissao('CAD_OCORRENCIA'), "Ocorrências");
 $form->SetSql($sql, 'ocorrencia', 'IDOCORRENCIA');

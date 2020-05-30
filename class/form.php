@@ -22,7 +22,7 @@ class Form {
 
     function __construct($permissao, $legend) {
         if (!$permissao) {
-            die("Sem Permissao");
+            $this->MostraMensagemPermissao();
         }
 
         Database::ConnectaBD();
@@ -317,11 +317,10 @@ class Form {
         $sequencial = Database::BuscaMaxSequencia($this->nmTabela);
 
         for ($i = 0; $i < count($arrArquivos); $i++) {
-            if (array_key_exists($i, $arrArquivos['name']) <> NULL) {
+            if (array_key_exists($i, $arrArquivos['name']) && $arrArquivos['name'][$i] <> NULL) {
                 $nmtemporario = $arrArquivos['tmp_name'][$i];
-        
                 $dsconteudo = file_get_contents($nmtemporario);
-        
+
                 $dados = array($this->chaveAnexo=>$sequencial,
                               'IDOCORRENCIA'=>$this->id,
                               'DSARQUIVO'=>base64_encode(gzcompress($dsconteudo)),
@@ -336,10 +335,19 @@ class Form {
         unset($arrArquivos);
     }
 
-    private function CarregaScript($arquivo, $arquivoReal = null) {
-        $arquivoReal = $arquivoReal ? $arquivoReal : $arquivo;
-        $modified = filemtime($arquivoReal);
-        return "\t<script type='text/javascript' src='$arquivo?t=$modified'></script>\n";
+    private function MostraMensagemPermissao() {
+        $str = '';
+        $str .= "<div class='wrapper wrapper-content'>";
+            $str .= "<div class='error-permissao middle-box text-center animated fadeInRightBig'>";
+                $str .= "<h3 class='font-bold'>Acesso negado</h3>";
+                $str .= "<div class='error-desc'>";
+                    $str .= "Voce não possui permissão para acessar essa página.";
+                    $str .= "<br><a href='index.php' class='btn btn-primary m-t'>Voltar</a>";
+                $str .= "</div>";
+            $str .= "</div>";
+        $str .= "</div>";
+ 
+        die($str);
     }
 
     public function Show() {
@@ -347,7 +355,7 @@ class Form {
         if (array_key_exists('btnSubmit', $_POST)) {
             $dados = $this->AjustaCamposSQL();
 
-            if (!empty($_FILES)) {
+            if (!empty($_FILES['ANEXOOCORRENCIA']['name'][0] <> NULL)) {
                 $this->InsereAnexo();
             }
 
@@ -355,13 +363,11 @@ class Form {
                 case 'c':
                     $dados[$this->chave] = Database::BuscaMaxSequencia($this->nmTabela);
                     Database::Insere($this->nmTabela, $dados);
-                    $dados['id'] = $dados[$this->chave];
                     break;
                 case 'u':
                     Database::Edita($this->nmTabela, $dados, [$this->chave=>$this->id]);
                     break;
                 case 'd':
-                    $dados[$this->chave] = $this->id;
                     Database::Deleta($this->nmTabela, [$this->chave=>$this->id]);
                     break;
             }
@@ -373,7 +379,6 @@ class Form {
             $this->Table();
         } else if (array_key_exists('acao', $_GET)) {
             $this->Cadastro();
-            echo $this->CarregaScript('js/ocorrencia.js');
         }
     }
 }
