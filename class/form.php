@@ -310,25 +310,23 @@ class Form {
         $this->chaveAnexo = $chaveanexo;
     }
 
-    private function InsereAnexo() {
+    private function InsereAnexo($id) {
         $arrArquivos = $_FILES['ANEXOOCORRENCIA'];
-
         Database::Deleta($this->tabelaAnexo, [$this->chaveAnexo=>$this->id]);
-        $sequencial = Database::BuscaMaxSequencia($this->nmTabela);
+        $sequencial = Database::BuscaMaxSequencia($this->tabelaAnexo);
 
         for ($i = 0; $i < count($arrArquivos); $i++) {
             if (array_key_exists($i, $arrArquivos['name']) && $arrArquivos['name'][$i] <> NULL) {
                 $nmtemporario = $arrArquivos['tmp_name'][$i];
                 $dsconteudo = file_get_contents($nmtemporario);
-
                 $dados = array($this->chaveAnexo=>$sequencial,
-                              'IDOCORRENCIA'=>$this->id,
+                              'IDOCORRENCIA'=>$id,
                               'DSARQUIVO'=>base64_encode(gzcompress($dsconteudo)),
                               'NRTAMANHOARQUIVO'=>$arrArquivos['size'][$i],
                               'NMARQUIVO'=>$arrArquivos['name'][$i],
                               'TPANEXO'=>$arrArquivos['type'][$i]);
-
-                Database::Insere($this->nmTabela, $dados);
+                Database::Insere($this->tabelaAnexo, $dados);
+                $sequencial++;
             }
         }
 
@@ -355,13 +353,10 @@ class Form {
         if (array_key_exists('btnSubmit', $_POST)) {
             $dados = $this->AjustaCamposSQL();
 
-            if (!empty($_FILES['ANEXOOCORRENCIA']['name'][0] <> NULL)) {
-                $this->InsereAnexo();
-            }
-
             switch ($_GET['acao']) {
                 case 'c':
-                    $dados[$this->chave] = Database::BuscaMaxSequencia($this->nmTabela);
+                    $id = Database::BuscaMaxSequencia($this->nmTabela);
+                    $dados[$this->chave] = $id;
                     Database::Insere($this->nmTabela, $dados);
                     break;
                 case 'u':
@@ -370,6 +365,10 @@ class Form {
                 case 'd':
                     Database::Deleta($this->nmTabela, [$this->chave=>$this->id]);
                     break;
+            }
+
+            if (!empty($_FILES['ANEXOOCORRENCIA']['name'][0] <> NULL)) {
+                $this->InsereAnexo($id);
             }
 
             header('location:'.$this->action);

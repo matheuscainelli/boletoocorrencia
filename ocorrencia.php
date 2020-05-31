@@ -23,7 +23,6 @@ $form->AddTable('NMVIGILANTE', 'Vigilante', ['width'=>"20px"], ['align'=>"left"]
 $form->AddTable('NMPOSTOAREA', 'Posto/Área', ['width'=>"20px"], ['align'=>"left"]);
 $form->AddTable('DTOCORRENCIA', 'Data/Hora', ['width'=>"20px"], ['align'=>"left"]);
 $form->AddTable('TPSTATUS', 'Status', ['width'=>"20px"], ['align'=>"left"]);
-// $form->AddTableAction("<i title=\"Visualizar\" style=\"color: red\" class=\"fas fa-file-pdf\"></i>", "ocorrenciapdf.php?id=:IDOCORRENCIA:", true);
 
 $form->AddInput('text', 'IDOCORRENCIA', 'Ocorrência', ['readonly'=>true, 'class'=>"form-control input-sm"], ['class'=>$form->GetLargura(1)]);
 $form->AddInput('text', 'TPSTATUS', 'Status', ['readonly'=>true, 'class'=>"form-control input-sm", 'style'=>'display: none'], ['style'=>'display: none', 'class'=>$form->GetLargura(1)]);

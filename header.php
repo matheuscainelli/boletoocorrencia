@@ -87,6 +87,7 @@ VerificaAcesso();
                             <?php
                                 MenuCria('<i class="fa fa-edit"></i>Cadastros',
                                     MontaMenuPermissao('Área', 'area.php', true).
+                                    MontaMenuPermissao('Campus', 'campus.php', true).
                                     MontaMenuPermissao('Grupo', 'grupo.php', true).
                                     MontaMenuPermissao('Perfil', 'perfil.php', true).
                                     MontaMenuPermissao('Posto Área', 'postoarea.php', true).

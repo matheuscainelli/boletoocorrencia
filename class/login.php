@@ -87,7 +87,7 @@ class Login {
 
     public function Submit() {
         if (array_key_exists('logout', $_GET)) {
-            Login::Logout();
+            $this->Logout();
             header('location: login.php');
             exit;
         }
@@ -97,7 +97,7 @@ class Login {
             exit;
         }
 
-        Login::View();
+        $this->View();
 
         if (isset($_POST['btnSubmit'])) {
             $user = $_POST['login'];
@@ -105,9 +105,8 @@ class Login {
             $arrBinds = array(':SGUSUARIO'=>array($user, 'PARAM_STR'),
                               ':PWUSUARIO'=>array($pass, 'PARAM_STR'));
 
-            $sql = "SELECT pa.IDUSUARIO, pa.NMUSUARIO, pa.SGUSUARIO, pe.IDPERFIL
+            $sql = "SELECT pa.IDUSUARIO, pa.NMUSUARIO, pa.SGUSUARIO, pa.IDPERFIL, pa.IDCAMPUS
                     FROM usuario pa
-                    JOIN perfil pe ON pa.IDPERFIL = pe.IDPERFIL
                     WHERE pa.SGUSUARIO = :SGUSUARIO  AND pa.PWUSUARIO = :PWUSUARIO AND pa.FLATIVO = 'S'";
             $this->arrDadosUsuario = Database::ExecutaSQLDados($sql, $arrBinds);
 

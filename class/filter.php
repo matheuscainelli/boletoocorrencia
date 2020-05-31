@@ -1,6 +1,6 @@
 <?php
 
-use Symfony\Component\Debug\Debug;
+use function PHPSTORM_META\exitPoint;
 
 class Filter {
     public $permissao;
@@ -253,71 +253,164 @@ class Filter {
                 WHERE tp.FLAREAABERTA = 'S' AND DATE_FORMAT(pa.DTOCORRENCIA , '%m/%Y') = :DSMESREFERENCIA
                 GROUP BY pa.IDPOSTOAREA, tp.IDTIPOOCORRENCIA, EXTRACT(DAY FROM pa.DTOCORRENCIA)
                 ORDER BY NMPOSTOAREA, NRDIA";
-        $arrDados = Database::MontaArrayNCampos($sql, $arrBinds, 'NMOCORRENCIA', array('NRDIA'=>'TOTAL'));
-
+        $arrDados = Database::MontaArrayChaveComposta($sql, $arrBinds, 'NMOCORRENCIA', 'NRDIA', array('TOTAL'));
+        $arrTotal = [];
         for ($i = 1; $i <= 31; $i++) {
             foreach ($arrDados as $nmOcorrencia => $dia) {
+                $arrTotal[$i] = 0;
                 if (!array_key_exists($i, $dia)) {
-                    $arrDados[$nmOcorrencia][$i] = 0;
+                    $arrDados[$nmOcorrencia][$i]['TOTAL'] = 0;
                     ksort($arrDados[$nmOcorrencia]);
                 }
             }
         }
-        printr($arrDados);
+
         ?>
-        <div class="inline-content ibox">
-            <div class="inline-body">
-                <table class="table table-striped table-bordered table-hover">
+
+        <div class='inline-content ibox'>
+            <div class='inline-body table-responsive'>
+                <table class='table table-striped table-bordered table-hover'>
                     <thead>
                         <tr>
-                            <th colspan="2" style="text-align: center; width:16%">Eventos</th>
-                            <th colspan="31" style="text-align: center; width: 62%;">Dias</th>
-                            <th colspan="1" style="width: 5%;"></th>
+                            <th colspan='1' style='text-align: center; width:16%'>Eventos</th>
+                            <th colspan='31' style='text-align: center; width: 62%;'>Dias</th>
+                            <th colspan='1' style='width: 5%;'></th>
                         </tr>
                     </thead>
                 </table>
-                <table  id="tableFilter" class="table table-striped table-bordered table-hover">
+                <table  id='tableFilter' class='table table-striped table-bordered table-hover'>
                     <thead>
-                        <th colspan="1" style="width:8.8%">Prédio</th>
-                        <th colspan="1" style="width:8.5%">Ocorrência</th>
-                        <?php
-                            for ($i = 1; $i <= 31; $i++): ?>
-                               <th colspan='31' style='width: 2%;'><?=$i; ?></th>
+                        <tr>
+                            <th colspan='1' style='width:17.8%'>Ocorrência</th>
                             <?php
-                            endfor;
-                        ?>
-                        <th colspan="1" style="width: 5.4%;">Sub-Total</th>
+                                for ($i = 1; $i <= 31; $i++): ?>
+                                <th colspan='31' style='width: 2%;'><?=$i; ?></th>
+                                <?php
+                                endfor;
+                            ?>
+                            <th colspan='1' style='width: 5.4%;'>Sub-Total</th>
+                        </tr>
                     </thead>
                     <tbody>
                         <?php
-                        foreach ($arrDados as $ocorrencia => $total): ?>
+                        foreach ($arrDados as $ocorrencia => $total): 
+                            $ocorrencias = 0;?>
                             <tr>
                                 <td><?= $ocorrencia?></td>
                                 <?php
-                                    foreach ($total as $dia => $vlOcorrencia): ?>
-                                        <td colspan="31" ><?= $vlOcorrencia;?></td>
-                                    <?php
-                                        endforeach;
+                                    foreach ($total as $dia => $vlOcorrencia):
+                                        $ocorrencias += $vlOcorrencia['TOTAL']; 
+                                        $arrTotal[$dia] += $vlOcorrencia['TOTAL']; 
                                     ?>
-                                        <td><?= array_sum($total)?></td>
+                                    <td colspan='31' ><?= $vlOcorrencia['TOTAL'];?></td>
+                                    <?php endforeach; ?>
+                                    <td><?= $ocorrencias ?></td>
                                     <?php
                                 endforeach;
                             ?>
                         </tr>
                     </tbody>
                 </table>
-                <table class="table table-striped table-bordered table-hover">
-                    <thead>
-                        <tr>
-                            <th colspan="2" style="text-align: center; width:16%">Sub-Total por Dia</th>
-                            <th colspan="31" style="text-align: center; width: 62%;"></th>
-                            <th colspan="1" style="width: 5%;"></th>
+                <table class='table table-striped table-bordered table-hover'>
+                    <tbody>
+                        <tr style='font-weight: bold'>
+                            <td colspan='2' style='width:15.8%'>Sub-Total por Dia</td>
+                            <?php
+                                foreach ($arrTotal as $dia => $totalDia): ?>
+                                    <td colspan='31' style='width: 2%;'><?= $totalDia ?></td>
+                            <?php endforeach; ?>
+                            <td colspan='1' style='width: 5%'><?= array_sum($arrTotal); ?></td>
                         </tr>
-                    </thead>
+                    </tbody>
                 </table>
             </div>
         </div>
         <?php
+    }
+
+    private function RelatorioAreasAbertasPDF(&$titulo) {
+        $titulo = "Áreas Abertas ".$this->post['DAMESREFERENCIA'];
+        $arrBinds = array(':DSMESREFERENCIA'=>array($this->post['DAMESREFERENCIA'], 'PARAM_STR'));
+
+        $sql = "SELECT COUNT(pa.IDTIPOOCORRENCIA) TOTAL, EXTRACT(DAY FROM pa.DTOCORRENCIA) NRDIA, CONCAT(po.NMPOSTO, ' - ', a.NMAREA) NMPOSTOAREA, tp.NMOCORRENCIA
+                FROM ocorrencia pa
+                LEFT JOIN tipoocorrencia tp on tp.IDTIPOOCORRENCIA = pa.IDTIPOOCORRENCIA
+                JOIN postoarea pta on pta.IDPOSTOAREA = pa.IDPOSTOAREA
+                JOIN posto po on po.IDPOSTO = pta.IDPOSTO
+                JOIN area a on a.IDAREA = pta.IDAREA 
+                WHERE tp.FLAREAABERTA = 'S' AND DATE_FORMAT(pa.DTOCORRENCIA , '%m/%Y') = :DSMESREFERENCIA
+                GROUP BY pa.IDPOSTOAREA, tp.IDTIPOOCORRENCIA, EXTRACT(DAY FROM pa.DTOCORRENCIA)
+                ORDER BY NMPOSTOAREA, NRDIA";
+        $arrDados = Database::MontaArrayChaveComposta($sql, $arrBinds, 'NMOCORRENCIA', 'NRDIA', array('TOTAL'));
+        $arrTotal = [];
+
+        for ($i = 1; $i <= 31; $i++) {
+            foreach ($arrDados as $nmOcorrencia => $dia) {
+                $arrTotal[$i] = 0;
+                if (!array_key_exists($i, $dia)) {
+                    $arrDados[$nmOcorrencia][$i]['TOTAL'] = 0;
+                    ksort($arrDados[$nmOcorrencia]);
+                }
+            }
+        }
+
+        $str = "";
+        $str .= "<div>";
+            $str .= "<table>";
+                $str .= "<tr>";
+                    $str .= "<td><img src='./img/logo.png' style='width: 120px;'></td>";
+                    $str .= "<td><p>Universidade de Passo Fundo<br>Divisão de Serviços Gerais<br>Segurança Patrimonial</p><td>";
+                $str .= "</tr>";
+            $str .= "</table>";
+        
+            $str .= "<p style='text-align: center;'>Controle Diário de Ocorrências de Risco Área Aberta<br>".$this->post['DAMESREFERENCIA']."</p>";
+
+            $str .= "<div>";
+                $str .= "<table border='1' cellpading='0' cellspacing='0' style='width:100%; border-collapse: collapse;'>";
+                    $str .= "<thead>";
+                        $str .= "<tr>";
+                            $str .= "<th colspan='1' style='text-align: center; width:110px'>Eventos</th>";
+                            $str .= "<th colspan='3' style='text-align: center; width: 2px;'>Dias</th>";
+                            $str .= "<th colspan='1' style='width: 50px;'></th>";
+                        $str .= "</tr>";
+                    $str .= "</thead>";
+               $str .= " </table>";
+                $str .= "<table border='1' cellpading='0' cellspacing='0' style='width:100%; border-collapse: collapse;'>";
+                    $str .= "<thead>";
+                            $str .= "<tr>";
+                                $str .= "<th colspan='1' style='text-align: center; width:330px; font-size: 30px'>Ocorrência</th>";
+                                    for ($i = 1; $i <= 31; $i++):
+                                        $str .= "<th colspan='1' style='width: 30px; font-size: 30px; text-align: right;'>$i</th>";
+                                    endfor;
+                                $str .= "<th colspan='1' style='width: 30px; font-size: 30px'>Sub-Total</th>";
+                        $str .= "</tr>";
+                    $str .= "</thead>";
+                    $str .= "<tbody>";
+                        foreach ($arrDados as $ocorrencia => $total):
+                            $ocorrencias = 0;
+                            $str .= "<tr>";
+                                $str .= "<td style='width: 320px; font-size: 30px'>$ocorrencia</td>";
+                                foreach ($total as $dia => $vlOcorrencia):
+                                    $ocorrencias += $vlOcorrencia['TOTAL']; 
+                                    $arrTotal[$dia] += $vlOcorrencia['TOTAL']; 
+                                    $str .= "<td colspan='1' style='width: 2px;font-size: 30px; text-align: right;'>".$vlOcorrencia['TOTAL']."</td>";
+                                endforeach;
+                                $str .= "<td style='width: 30px;font-size: 30px; text-align: right;'>$ocorrencias</td>";
+                            $str .= "</tr>";
+                        endforeach;
+                        $str .= "<tr>";
+                            $str .= "<td colspan='1' style='width: 110px; font-size: 30px; font-weight bold'>Total Dia</td>";
+                                foreach ($arrTotal as $dia => $totalDia):
+                                    $str .=  "<td colspan='1' style='width: 50px; font-size: 30px; text-align: right;'>$totalDia</td>";
+                                endforeach;
+                            $str .= "<td colspan='1' style='width: 30px; font-size: 30px; text-align: right;'>".array_sum($arrTotal)."</td>";
+                        $str .= "</tr>";
+                    $str .= "</tbody>";
+                $str .= "</table>";
+            $str .= "</div>";
+        $str .= "</div>";
+
+        return $str;
     }
 
     private function RelatorioDiario() {
@@ -328,7 +421,28 @@ class Filter {
     }
 
     private function GeraPDF() {
+        define('MPDF_PATH', './mpdf/');
+        require_once MPDF_PATH.'mpdf.php';
+        ob_clean();
 
+        $mpdf = new mPDF('utf-8', 'A4');
+
+        switch($this->tipoRelatorio) {
+            case 'A':
+                $mpdf->WriteHTML($this->RelatorioAreasAbertasPDF($titulo));
+            break;
+            case 'D':
+                $mpdf->WriteHTML($this->RelatorioAreasAbertasPDF($titulo));
+            break;
+            case 'M':
+                $mpdf->WriteHTML($this->RelatorioAreasAbertasPDF($titulo));
+            break;
+        }
+
+        $mpdf->setTitle($titulo);
+        $mpdf->Output($titulo.'.pdf', "D");
+
+        exit();
     }
 
     public function Filtros() {

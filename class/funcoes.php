@@ -182,7 +182,6 @@ function VerificaAcesso() {
     date_default_timezone_set('America/Sao_Paulo');
 
     Database::ConnectaBD();
-    Session::Start();
 
     if (!array_key_exists('SGUSUARIO', Session::GetAll())) {
         header('location: login.php');
@@ -274,6 +273,20 @@ function BuscaArrPostoArea() {
             JOIN posto po ON pa.IDPOSTO = po.IDPOSTO";
 
     return Database::MontaArraySelect($sql, [], 'IDPOSTOAREA', 'NMPOSTOAREA');
+}
+
+function BuscaArrCampus() {
+    $sql = "SELECT ca.IDCAMPUS, ca.NMCAMPUS
+            FROM campus ca";
+
+    return Database::MontaArraySelect($sql, [], 'IDCAMPUS', 'NMCAMPUS');
+}
+
+function BuscaArrGrupo() {
+    $sql = "SELECT pa.IDGRUPO, pa.NMGRUPO
+            FROM grupo pa";
+
+    return Database::MontaArraySelect($sql, [], 'IDGRUPO', 'NMGRUPO');
 }
 
 function GetPerfilPermissao ($idPefil) {
