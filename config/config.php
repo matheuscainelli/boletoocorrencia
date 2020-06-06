@@ -1,4 +1,3 @@
 <?php
 define("nmSistema", "Gerenciamento de Ocorrência");
-define("nrVersaoSistema", "");
-define("nrVersaoBD", "");
+define('MPDF_PATH', './mpdf/');

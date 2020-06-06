@@ -6,7 +6,7 @@ $sql = "SELECT pa.*, g.NMGRUPO
         LEFT JOIN grupo g ON g.IDGRUPO = pa.IDGRUPO
 		WHERE TRUE";
 
-$form = new Form(TRUE, "Área");
+$form = new Form(ConsultaPermissao('CAD_AREA'), "Área");
 $form->SetSql($sql, 'area', 'IDAREA');
 $form->SetCamposSQL(['IDAREA', 'NMAREA', 'IDGRUPO']);
 

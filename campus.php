@@ -5,7 +5,7 @@ $sql = "SELECT pa.*
         FROM campus pa
 		WHERE TRUE";
 
-$form = new Form(ConsultaPermissao('CAD_grupo'), "Campus");
+$form = new Form(ConsultaPermissao('CAD_CAMPUS'), "Campus");
 $form->SetSql($sql, 'campus', 'IDCAMPUS');
 $form->SetCamposSQL(['IDCAMPUS', 'NMCAMPUS']);
 

@@ -73,10 +73,12 @@ VerificaAcesso();
                         <ul class="nav metismenu" id="side-menu">
                             <li class="nav-header">
                                 <div class="dropdown profile-element" title="">
-                                    <span></span>
+                                    <a href="index.php">
+                                        <img src="img/icon.png" style='width: 30px;height: 31px;display: block; margin-left:auto; margin-right: auto;' title="Início" class="logo-img"/>
+                                    </a>
                                 </div>
                                 <div class="logo-element" title="">
-                                    <img src="" width="28px">
+                                    <img src="img/icon.png" width="30px">
                                 </div>
                             </li>
                             <li class=>
@@ -86,21 +88,21 @@ VerificaAcesso();
                             </li>
                             <?php
                                 MenuCria('<i class="fa fa-edit"></i>Cadastros',
-                                    MontaMenuPermissao('Área', 'area.php', true).
-                                    MontaMenuPermissao('Campus', 'campus.php', true).
-                                    MontaMenuPermissao('Grupo', 'grupo.php', true).
-                                    MontaMenuPermissao('Perfil', 'perfil.php', true).
-                                    MontaMenuPermissao('Posto Área', 'postoarea.php', true).
-                                    MontaMenuPermissao('Posto', 'posto.php', true).
-                                    MontaMenuPermissao('Tipo Ocorrência', 'tipoocorrencia.php', true).
-                                    MontaMenuPermissao('Usuário', 'usuario.php', true).
-                                    MontaMenuPermissao('Vigilante', 'vigilante.php', true)
+                                    MontaMenuPermissao('Área', 'area.php', ValidaPermissao('CAD_AREA')).
+                                    MontaMenuPermissao('Campus', 'campus.php', ValidaPermissao('CAD_CAMPUS')).
+                                    MontaMenuPermissao('Grupo', 'grupo.php', ValidaPermissao('CAD_GRUPO')).
+                                    MontaMenuPermissao('Perfil', 'perfil.php', ValidaPermissao('CAD_PERFIL')).
+                                    MontaMenuPermissao('Posto Área', 'postoarea.php', ValidaPermissao('CAD_POSTOAREA')).
+                                    MontaMenuPermissao('Posto', 'posto.php', ValidaPermissao('CAD_POSTO')).
+                                    MontaMenuPermissao('Tipo Ocorrência', 'tipoocorrencia.php', ValidaPermissao('CAD_TIPOOCORRENCIA')).
+                                    MontaMenuPermissao('Usuário', 'usuario.php', ValidaPermissao('CAD_USUARIO')).
+                                    MontaMenuPermissao('Vigilante', 'vigilante.php', ValidaPermissao('CAD_VIGILANTE'))
                                 );
                                 MenuCria('<i class="fa fa-wrench"></i>Tarefas',
-                                    MontaMenuPermissao('Ocorrências', 'index.php', true)
+                                    MontaMenuPermissao('Ocorrências', 'index.php', ValidaPermissao('CAD_OCORRENCIA'))
                                 );
                                 MenuCria('<i class="fa fa-search"></i>Consultas',
-                                    MontaMenuPermissao('Relatório Gerencial', 'relatorio.php', true)
+                                    MontaMenuPermissao('Relatório Gerencial', 'relatorio.php', ValidaPermissao('REL_GERENCIAL'))
                                 );
                             ?>
                         </ul>

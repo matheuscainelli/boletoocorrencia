@@ -244,17 +244,18 @@ class Filter {
     private function RelatorioAreasAbertas() {
         $arrBinds = array(':DSMESREFERENCIA'=>array($this->post['DAMESREFERENCIA'], 'PARAM_STR'));
 
-        $sql = "SELECT COUNT(pa.IDTIPOOCORRENCIA) TOTAL, EXTRACT(DAY FROM pa.DTOCORRENCIA) NRDIA, CONCAT(po.NMPOSTO, ' - ', a.NMAREA) NMPOSTOAREA, tp.NMOCORRENCIA
-                FROM ocorrencia pa
-                LEFT JOIN tipoocorrencia tp on tp.IDTIPOOCORRENCIA = pa.IDTIPOOCORRENCIA
-                JOIN postoarea pta on pta.IDPOSTOAREA = pa.IDPOSTOAREA
-                JOIN posto po on po.IDPOSTO = pta.IDPOSTO
-                JOIN area a on a.IDAREA = pta.IDAREA 
-                WHERE tp.FLAREAABERTA = 'S' AND DATE_FORMAT(pa.DTOCORRENCIA , '%m/%Y') = :DSMESREFERENCIA
-                GROUP BY pa.IDPOSTOAREA, tp.IDTIPOOCORRENCIA, EXTRACT(DAY FROM pa.DTOCORRENCIA)
-                ORDER BY NMPOSTOAREA, NRDIA";
+        $sql = "SELECT COALESCE(sub.TOTAL, 0) AS TOTAL, COALESCE(sub.NRDIA, 1) AS NRDIA, t.NMOCORRENCIA 
+                FROM tipoocorrencia t
+                LEFT JOIN (SELECT COUNT(pa.IDTIPOOCORRENCIA) TOTAL, EXTRACT(DAY FROM pa.DTOCORRENCIA) NRDIA,
+                                tP.IDTIPOOCORRENCIA
+                            FROM ocorrencia pa
+                            LEFT JOIN tipoocorrencia tp on tp.IDTIPOOCORRENCIA = pa.IDTIPOOCORRENCIA
+                            WHERE tp.FLAREAABERTA = 'S' AND DATE_FORMAT(pa.DTOCORRENCIA , '%m/%Y') = :DSMESREFERENCIA
+                            GROUP BY pa.IDPOSTOAREA, tp.IDTIPOOCORRENCIA, EXTRACT(DAY FROM pa.DTOCORRENCIA)
+                            ORDER BY NRDIA) sub on sub.IDTIPOOCORRENCIA = t.IDTIPOOCORRENCIA";
         $arrDados = Database::MontaArrayChaveComposta($sql, $arrBinds, 'NMOCORRENCIA', 'NRDIA', array('TOTAL'));
         $arrTotal = [];
+
         for ($i = 1; $i <= 31; $i++) {
             foreach ($arrDados as $nmOcorrencia => $dia) {
                 $arrTotal[$i] = 0;
@@ -332,15 +333,15 @@ class Filter {
         $titulo = "Áreas Abertas ".$this->post['DAMESREFERENCIA'];
         $arrBinds = array(':DSMESREFERENCIA'=>array($this->post['DAMESREFERENCIA'], 'PARAM_STR'));
 
-        $sql = "SELECT COUNT(pa.IDTIPOOCORRENCIA) TOTAL, EXTRACT(DAY FROM pa.DTOCORRENCIA) NRDIA, CONCAT(po.NMPOSTO, ' - ', a.NMAREA) NMPOSTOAREA, tp.NMOCORRENCIA
-                FROM ocorrencia pa
-                LEFT JOIN tipoocorrencia tp on tp.IDTIPOOCORRENCIA = pa.IDTIPOOCORRENCIA
-                JOIN postoarea pta on pta.IDPOSTOAREA = pa.IDPOSTOAREA
-                JOIN posto po on po.IDPOSTO = pta.IDPOSTO
-                JOIN area a on a.IDAREA = pta.IDAREA 
-                WHERE tp.FLAREAABERTA = 'S' AND DATE_FORMAT(pa.DTOCORRENCIA , '%m/%Y') = :DSMESREFERENCIA
-                GROUP BY pa.IDPOSTOAREA, tp.IDTIPOOCORRENCIA, EXTRACT(DAY FROM pa.DTOCORRENCIA)
-                ORDER BY NMPOSTOAREA, NRDIA";
+        $sql = "SELECT COALESCE(sub.TOTAL, 0) AS TOTAL, COALESCE(sub.NRDIA, 1) AS NRDIA, t.NMOCORRENCIA 
+                FROM tipoocorrencia t
+                LEFT JOIN (SELECT COUNT(pa.IDTIPOOCORRENCIA) TOTAL, EXTRACT(DAY FROM pa.DTOCORRENCIA) NRDIA,
+                                tP.IDTIPOOCORRENCIA 
+                            FROM ocorrencia pa
+                            LEFT JOIN tipoocorrencia tp on tp.IDTIPOOCORRENCIA = pa.IDTIPOOCORRENCIA
+                            WHERE tp.FLAREAABERTA = 'S' AND DATE_FORMAT(pa.DTOCORRENCIA , '%m/%Y') = :DSMESREFERENCIA
+                            GROUP BY pa.IDPOSTOAREA, tp.IDTIPOOCORRENCIA, EXTRACT(DAY FROM pa.DTOCORRENCIA)
+                            ORDER BY NRDIA) sub on sub.IDTIPOOCORRENCIA = t.IDTIPOOCORRENCIA";
         $arrDados = Database::MontaArrayChaveComposta($sql, $arrBinds, 'NMOCORRENCIA', 'NRDIA', array('TOTAL'));
         $arrTotal = [];
 
@@ -418,24 +419,324 @@ class Filter {
     }
 
     private function RelatorioMensal() {
+        $arrBinds = array(':DSMESREFERENCIA'=>array($this->post['DAMESREFERENCIA'], 'PARAM_STR'));
+
+        $sql = "SELECT pa.IDPOSTOAREA, CONCAT(p.NMPOSTO, ' - ', a.NMAREA) as DSUNIDADE,
+                      (SELECT COUNT(o.IDOCORRENCIA) FROM ocorrencia o WHERE o.IDPOSTOAREA = pa.IDPOSTOAREA && o.IDTIPOOCORRENCIA = 23 AND DATE_FORMAT(o.DTOCORRENCIA , '%m/%Y') = :DSMESREFERENCIA) AS DSPORTAALTERADA,
+                      (SELECT COUNT(o.IDOCORRENCIA) FROM ocorrencia o WHERE o.IDPOSTOAREA = pa.IDPOSTOAREA && o.IDTIPOOCORRENCIA = 24 AND DATE_FORMAT(o.DTOCORRENCIA , '%m/%Y') = :DSMESREFERENCIA) AS DSFECHADURAALTERADA,
+                      (SELECT COUNT(o.IDOCORRENCIA) FROM ocorrencia o WHERE o.IDPOSTOAREA = pa.IDPOSTOAREA && o.IDTIPOOCORRENCIA = 25 AND DATE_FORMAT(o.DTOCORRENCIA , '%m/%Y') = :DSMESREFERENCIA) AS DSCADEADOALTERADO,
+                      (SELECT COUNT(o.IDOCORRENCIA) FROM ocorrencia o WHERE o.IDPOSTOAREA = pa.IDPOSTOAREA && o.IDTIPOOCORRENCIA = 26 AND DATE_FORMAT(o.DTOCORRENCIA , '%m/%Y') = :DSMESREFERENCIA) AS DSJANELAALTERADA,
+                      (SELECT COUNT(o.IDOCORRENCIA) FROM ocorrencia o WHERE o.IDPOSTOAREA = pa.IDPOSTOAREA && o.IDTIPOOCORRENCIA = 27 AND DATE_FORMAT(o.DTOCORRENCIA , '%m/%Y') = :DSMESREFERENCIA) AS DSPAREDEALTERADA,
+                      (SELECT COUNT(o.IDOCORRENCIA) FROM ocorrencia o WHERE o.IDPOSTOAREA = pa.IDPOSTOAREA && o.IDTIPOOCORRENCIA = 28 AND DATE_FORMAT(o.DTOCORRENCIA , '%m/%Y') = :DSMESREFERENCIA) AS DSCERCAALTERADA,
+                      (SELECT COUNT(o.IDOCORRENCIA) FROM ocorrencia o WHERE o.IDPOSTOAREA = pa.IDPOSTOAREA && o.IDTIPOOCORRENCIA = 29 AND DATE_FORMAT(o.DTOCORRENCIA , '%m/%Y') = :DSMESREFERENCIA) AS DSLUZESACESSAS
+                FROM postoarea pa
+                JOIN posto p ON p.IDPOSTO = pa.IDPOSTO
+                JOIN area a ON a.IDAREA = pa.IDAREA
+                ORDER BY pa.IDPOSTOAREA ASC";
+        $arrOcorrencias = DataBase::MontaArrayNCampos($sql, $arrBinds, 'DSUNIDADE', array('DSPORTAALTERADA', 'DSFECHADURAALTERADA', 'DSCADEADOALTERADO', 'DSJANELAALTERADA', 'DSPAREDEALTERADA', 'DSCERCAALTERADA', 'DSLUZESACESSAS'));
+        $arrTotal = array('DSPORTAALTERADA'=>0, 'DSFECHADURAALTERADA'=>0, 'DSCADEADOALTERADO'=>0, 'DSJANELAALTERADA'=>0, 'DSPAREDEALTERADA'=>0, 'DSCERCAALTERADA'=>0, 'DSLUZESACESSAS'=>0);
+
+        foreach ($arrOcorrencias as $unidade => $valor) {
+            $arrTotal['DSPORTAALTERADA'] += $valor['DSPORTAALTERADA'];
+            $arrTotal['DSFECHADURAALTERADA'] += $valor['DSFECHADURAALTERADA'];
+            $arrTotal['DSCADEADOALTERADO'] += $valor['DSCADEADOALTERADO'];
+            $arrTotal['DSJANELAALTERADA'] += $valor['DSJANELAALTERADA'];
+            $arrTotal['DSPAREDEALTERADA'] += $valor['DSPAREDEALTERADA'];
+            $arrTotal['DSCERCAALTERADA'] += $valor['DSCERCAALTERADA'];
+            $arrTotal['DSLUZESACESSAS'] += $valor['DSLUZESACESSAS'];
+        }
+
+        $subTotal = array_sum($arrTotal);
+        $sql = "SELECT COALESCE(sub.TOTAL, 0) AS TOTAL, t.NMOCORRENCIA 
+                FROM tipoocorrencia t
+                LEFT JOIN (SELECT COUNT(pa.IDTIPOOCORRENCIA) TOTAL,
+                                 tP.IDTIPOOCORRENCIA 
+                           FROM ocorrencia pa
+                           LEFT JOIN tipoocorrencia tp on tp.IDTIPOOCORRENCIA = pa.IDTIPOOCORRENCIA
+                           WHERE tp.FLAREAABERTA = 'S' AND DATE_FORMAT(pa.DTOCORRENCIA , '%m/%Y') = :DSMESREFERENCIA
+                           GROUP BY pa.IDPOSTOAREA, tp.IDTIPOOCORRENCIA) sub on sub.IDTIPOOCORRENCIA = t.IDTIPOOCORRENCIA
+                WHERE t.FLAREAABERTA = 'S'";
+        $arrAreaAberta = DataBase::MontaArraySelect($sql, $arrBinds, 'NMOCORRENCIA', 'TOTAL');
+        $subTotalAreas = array_sum($arrAreaAberta);
+        $subTotal += $subTotalAreas;
+
+        ?>
+        <div class='inline-content ibox'>
+            <div class='inline-body table-responsive'>
+                <table id='tableFilter' class='table table-striped table-bordered table-hover'>
+                    <thead>
+                        <tr>
+                            <th style='width: 1%'>Unidade</th>
+                            <th style='width: 10px'>Total Mês</th>
+                            <th style='width: 10px'>Porta(ão) Alt.</th>
+                            <th style='width: 10px'>Fechadura Alt.</th>
+                            <th style='width: 10px'>Cadeado Alt.</th>
+                            <th style='width: 10px'>Vidraça Alt.</th>
+                            <th style='width: 10px'>Telhado Alt.</th>
+                            <th style='width: 10px'>Cerca/Grade Alt.</th>
+                            <th style='width: 10px'>Luzes Acesas</th>
+
+                            <th style='width: 10px'>Comp. Curioso</th>
+                            <th style='width: 10px'>Acomp. Visual</th>
+                            <th style='width: 10px'>Contato p/ Informação</th>
+                            <th style='width: 10px'>Disparo Alarme</th>
+                            <th style='width: 10px'>Averiguação</th>
+                            <th style='width: 10px'>Obj. Encontado</th>
+                            <th style='width: 10px'>Obj. Desaparecidos</th>
+                            <th style='width: 10px'>Flagrante</th>
+                            <th style='width: 10px'>Ameaça</th>
+                            <th style='width: 10px'>Agressão</th>
+                            <th style='width: 10px'>Apoio</th>
+                            <th style='width: 10px'>Acidente</th>
+                            <th style='width: 10px'>Primeiros Socorros</th>
+                            <th style='width: 10px'>Transp. Emerg. Int</th>
+                            <th style='width: 10px'>Transp. Emerg. Ext</th>
+                            <th style='width: 10px'>Carga/Descarga</th>
+                            <th style='width: 10px'>Carga de Risco</th>
+                            <th style='width: 10px'>Veículo Oficial</th>
+                            <th style='width: 10px'>Veículo Funerário</th>
+                            <th style='width: 10px'>Veículo em Situação de Risco</th>
+                            <th style='width: 10px'>Un. não solicitou Abertura/Fechamento</th>
+                            <th style='width: 10px'>Un. não aguardou Abertura/Fechamento</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php
+                            foreach ($arrOcorrencias as $unidade => $totalOcorrencias): 
+                                $totalUnidade = array_sum($totalOcorrencias); ?>
+                                <tr>
+                                    <td style='font-weight: bold;'><?=$unidade?></td>
+                                    <td><?=$totalUnidade?></td>
+                                    <td><?=$totalOcorrencias['DSPORTAALTERADA']?></td>
+                                    <td><?=$totalOcorrencias['DSFECHADURAALTERADA']?></td>
+                                    <td><?=$totalOcorrencias['DSCADEADOALTERADO']?></td>
+                                    <td><?=$totalOcorrencias['DSJANELAALTERADA']?></td>
+                                    <td><?=$totalOcorrencias['DSPAREDEALTERADA']?></td>
+                                    <td><?=$totalOcorrencias['DSCERCAALTERADA']?></td>
+                                    <td><?=$totalOcorrencias['DSLUZESACESSAS']?></td>
+                                    <?php
+                                        for($i = 0; $i < 22; $i++): ?>
+                                            <td></td>
+                                        <?php
+                                        endfor;
+                                    ?>
+                                </tr>
+                            <?php
+                            endforeach;
+                        ?>
+
+                        <tr>
+                            <td style='font-weight: bolder;'>Áreas Abertas</td>
+                            <td><?=$subTotalAreas?></td>
+
+                            <?php
+                                for($i = 1; $i < 8; $i++): ?>
+                                    <td></td>
+                                <?php
+                                endfor;
+
+                                foreach ($arrAreaAberta as $areas => $total): ?>
+                                    <td><?=$total?></td>
+                                <?php
+                                endforeach;
+                            ?>
+                        </tr>
+
+                        <tr style='font-weight: bolder;'>
+                            <td>Sub-Total Mês</td>
+                            <td><?=$subTotal?></td>
+                            <td><?=$arrTotal['DSPORTAALTERADA']?></td>
+                            <td><?=$arrTotal['DSFECHADURAALTERADA']?></td>
+                            <td><?=$arrTotal['DSCADEADOALTERADO']?></td>
+                            <td><?=$arrTotal['DSJANELAALTERADA']?></td>
+                            <td><?=$arrTotal['DSPAREDEALTERADA']?></td>
+                            <td><?=$arrTotal['DSCERCAALTERADA']?></td>
+                            <td><?=$arrTotal['DSLUZESACESSAS']?></td>
+
+                            <?php
+                                foreach ($arrAreaAberta as $areas => $total): ?>
+                                    <td><?=$total?></td>
+                                <?php
+                                endforeach;
+                            ?>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <?php
+    }
+
+    private function RelatorioMensalPDF(&$titulo) {
+        $titulo = "Mensal ".$this->post['DAMESREFERENCIA'];
+        $arrBinds = array(':DSMESREFERENCIA'=>array($this->post['DAMESREFERENCIA'], 'PARAM_STR'));
+
+        
+        $sql = "SELECT pa.IDPOSTOAREA, CONCAT(p.NMPOSTO, ' - ', a.NMAREA) as DSUNIDADE,
+                      (SELECT COUNT(o.IDOCORRENCIA) FROM ocorrencia o WHERE o.IDPOSTOAREA = pa.IDPOSTOAREA && o.IDTIPOOCORRENCIA = 23 AND DATE_FORMAT(o.DTOCORRENCIA , '%m/%Y') = :DSMESREFERENCIA) AS DSPORTAALTERADA,
+                      (SELECT COUNT(o.IDOCORRENCIA) FROM ocorrencia o WHERE o.IDPOSTOAREA = pa.IDPOSTOAREA && o.IDTIPOOCORRENCIA = 24 AND DATE_FORMAT(o.DTOCORRENCIA , '%m/%Y') = :DSMESREFERENCIA) AS DSFECHADURAALTERADA,
+                      (SELECT COUNT(o.IDOCORRENCIA) FROM ocorrencia o WHERE o.IDPOSTOAREA = pa.IDPOSTOAREA && o.IDTIPOOCORRENCIA = 25 AND DATE_FORMAT(o.DTOCORRENCIA , '%m/%Y') = :DSMESREFERENCIA) AS DSCADEADOALTERADO,
+                      (SELECT COUNT(o.IDOCORRENCIA) FROM ocorrencia o WHERE o.IDPOSTOAREA = pa.IDPOSTOAREA && o.IDTIPOOCORRENCIA = 26 AND DATE_FORMAT(o.DTOCORRENCIA , '%m/%Y') = :DSMESREFERENCIA) AS DSJANELAALTERADA,
+                      (SELECT COUNT(o.IDOCORRENCIA) FROM ocorrencia o WHERE o.IDPOSTOAREA = pa.IDPOSTOAREA && o.IDTIPOOCORRENCIA = 27 AND DATE_FORMAT(o.DTOCORRENCIA , '%m/%Y') = :DSMESREFERENCIA) AS DSPAREDEALTERADA,
+                      (SELECT COUNT(o.IDOCORRENCIA) FROM ocorrencia o WHERE o.IDPOSTOAREA = pa.IDPOSTOAREA && o.IDTIPOOCORRENCIA = 28 AND DATE_FORMAT(o.DTOCORRENCIA , '%m/%Y') = :DSMESREFERENCIA) AS DSCERCAALTERADA,
+                      (SELECT COUNT(o.IDOCORRENCIA) FROM ocorrencia o WHERE o.IDPOSTOAREA = pa.IDPOSTOAREA && o.IDTIPOOCORRENCIA = 29 AND DATE_FORMAT(o.DTOCORRENCIA , '%m/%Y') = :DSMESREFERENCIA) AS DSLUZESACESSAS
+                FROM postoarea pa
+                JOIN posto p ON p.IDPOSTO = pa.IDPOSTO
+                JOIN area a ON a.IDAREA = pa.IDAREA
+                ORDER BY pa.IDPOSTOAREA ASC";
+
+        $arrOcorrencias = DataBase::MontaArrayNCampos($sql, $arrBinds, 'DSUNIDADE', array('DSPORTAALTERADA', 'DSFECHADURAALTERADA', 'DSCADEADOALTERADO', 'DSJANELAALTERADA', 'DSPAREDEALTERADA', 'DSCERCAALTERADA', 'DSLUZESACESSAS'));
+        $arrTotal = array('DSPORTAALTERADA'=>0, 'DSFECHADURAALTERADA'=>0, 'DSCADEADOALTERADO'=>0, 'DSJANELAALTERADA'=>0, 'DSPAREDEALTERADA'=>0, 'DSCERCAALTERADA'=>0, 'DSLUZESACESSAS'=>0);
+
+        foreach ($arrOcorrencias as $unidade => $valor) {
+            $arrTotal['DSPORTAALTERADA'] += $valor['DSPORTAALTERADA'];
+            $arrTotal['DSFECHADURAALTERADA'] += $valor['DSFECHADURAALTERADA'];
+            $arrTotal['DSCADEADOALTERADO'] += $valor['DSCADEADOALTERADO'];
+            $arrTotal['DSJANELAALTERADA'] += $valor['DSJANELAALTERADA'];
+            $arrTotal['DSPAREDEALTERADA'] += $valor['DSPAREDEALTERADA'];
+            $arrTotal['DSCERCAALTERADA'] += $valor['DSCERCAALTERADA'];
+            $arrTotal['DSLUZESACESSAS'] += $valor['DSLUZESACESSAS'];
+        }
+
+        $subTotal = array_sum($arrTotal);
+
+        $sql = "SELECT COALESCE(sub.TOTAL, 0) AS TOTAL, t.NMOCORRENCIA 
+                FROM tipoocorrencia t
+                LEFT JOIN (SELECT COUNT(pa.IDTIPOOCORRENCIA) TOTAL,
+                                 tP.IDTIPOOCORRENCIA 
+                           FROM ocorrencia pa
+                           LEFT JOIN tipoocorrencia tp on tp.IDTIPOOCORRENCIA = pa.IDTIPOOCORRENCIA
+                           WHERE tp.FLAREAABERTA = 'S' AND DATE_FORMAT(pa.DTOCORRENCIA , '%m/%Y') = :DSMESREFERENCIA
+                           GROUP BY pa.IDPOSTOAREA, tp.IDTIPOOCORRENCIA) sub on sub.IDTIPOOCORRENCIA = t.IDTIPOOCORRENCIA
+                WHERE t.FLAREAABERTA = 'S'";
+
+        $arrAreaAberta = DataBase::MontaArraySelect($sql, $arrBinds, 'NMOCORRENCIA', 'TOTAL');
+        $subTotalAreas = array_sum($arrAreaAberta);
+
+        $subTotal += $subTotalAreas;
+        $str = "";
+
+        $str .= "<div>";
+        $str .= "<table>";
+            $str .= "<tr>";
+                $str .= "<td><img src='./img/logo.png' style='width: 120px;'></td>";
+                $str .= "<td><p>Universidade de Passo Fundo<br>Divisão de Serviços Gerais<br>Segurança Patrimonial</p><td>";
+            $str .= "</tr>";
+        $str .= "</table>";
+    
+        $str .= "<p style='text-align: center;'>Controle Mensal de Ocorrências<br>".$this->post['DAMESREFERENCIA']."</p>";
+
+        $str.= "<div class='inline-content ibox'>";
+            $str.= "<div class='inline-body table-responsive'>";
+                $str.= "<table  border='1' cellpading='0' cellspacing='0' style='width:100%; border-collapse: collapse;'>";
+                    $str.= "<thead>";
+                        $str.= "<tr style='text-rotate: 90'>";
+                            $str.= "<th style='width: 1%;'>Unidade</th>";
+                            $str.= "<th style='width: 10px'>Total Mês</th>";
+                            $str.= "<th style='width: 10px'>Porta(ão) Alt.</th>";
+                            $str.= "<th style='width: 10px'>Fechadura Alt.</th>";
+                            $str.= "<th style='width: 10px'>Cadeado Alt.</th>";
+                            $str.= "<th style='width: 10px'>Vidraça Alt.</th>";
+                            $str.= "<th style='width: 10px'>Telhado Alt.</th>";
+                            $str.= "<th style='width: 10px'>Cerca/Grade Alt.</th>";
+                            $str.= "<th style='width: 10px'>Luzes Acesas</th>";
+
+                            $str.= "<th style='width: 10px'>Comp. Curioso</th>";
+                            $str.= "<th style='width: 10px'>Acomp. Visual</th>";
+                            $str.= "<th style='width: 10px'>Contato p/ Informação</th>";
+                            $str.= "<th style='width: 10px'>Disparo Alarme</th>";
+                            $str.= "<th style='width: 10px'>Averiguação</th>";
+                            $str.= "<th style='width: 10px'>Obj. Encontado</th>";
+                            $str.= "<th style='width: 10px'>Obj. Desaparecidos</th>";
+                            $str.= "<th style='width: 10px'>Flagrante</th>";
+                            $str.= "<th style='width: 10px'>Ameaça</th>";
+                            $str.= "<th style='width: 10px'>Agressão</th>";
+                            $str.= "<th style='width: 10px'>Apoio</th>";
+                            $str.= "<th style='width: 10px'>Acidente</th>";
+                            $str.= "<th style='width: 10px'>Primeiros Socorros</th>";
+                            $str.= "<th style='width: 10px'>Transp. Emerg. Int</th>";
+                            $str.= "<th style='width: 10px'>Transp. Emerg. Ext</th>";
+                            $str.= "<th style='width: 10px'>Carga/Descarga</th>";
+                            $str.= "<th style='width: 10px'>Carga de Risco</th>";
+                            $str.= "<th style='width: 10px'>Veículo Oficial</th>";
+                            $str.= "<th style='width: 10px'>Veículo Funerário</th>";
+                            $str.= "<th style='width: 10px'>Veículo em Situação de Risco</th>";
+                            $str.= "<th style='width: 10px'>Un. não solicitou Abertura/Fechamento</th>";
+                            $str.= "<th style='width: 10px'>Un. não aguardou Abertura/Fechamento</th>";
+                        $str.= "</tr>";
+                    $str.= "</thead>";
+                    $str.= "<tbody>";
+                            foreach ($arrOcorrencias as $unidade => $totalOcorrencias): 
+                                $totalUnidade = array_sum($totalOcorrencias);
+                                $str.= "<tr>";
+                                    $str.= "<td style='font-weight: bold;'>".$unidade."</td>";
+                                    $str.= "<td>".$totalUnidade."</td>";
+                                    $str.= "<td>".$totalOcorrencias['DSPORTAALTERADA']."</td>";
+                                    $str.= "<td>".$totalOcorrencias['DSFECHADURAALTERADA']."</td>";
+                                    $str.= "<td>".$totalOcorrencias['DSCADEADOALTERADO']."</td>";
+                                    $str.= "<td>".$totalOcorrencias['DSJANELAALTERADA']."</td>";
+                                    $str.= "<td>".$totalOcorrencias['DSPAREDEALTERADA']."</td>";
+                                    $str.= "<td>".$totalOcorrencias['DSCERCAALTERADA']."</td>";
+                                    $str.= "<td>".$totalOcorrencias['DSLUZESACESSAS']."</td>";
+                                    for($i = 0; $i < 22; $i++):
+                                        $str.= "<td></td>";
+                                    endfor;
+                                $str.= "</tr>";
+                            endforeach;
+
+                        $str.= "<tr>";
+                            $str.= "<td style='font-weight: bold;'>Áreas Abertas</td>";
+                            $str.= "<td>".$subTotalAreas."</td>";
+                                for($i = 1; $i < 8; $i++):
+                                    $str.= "<td></td>";
+                                endfor;
+
+                                foreach ($arrAreaAberta as $areas => $total):
+                                    $str.= "<td>".$total."</td>";
+                                endforeach;
+                        $str.=  "</tr>";
+
+                        $str.= "<tr>";
+                            $str.= "<td style='font-weight: bold;'>Sub-Total Mês</td>";
+                            $str.= "<td style='font-weight: bold;'>".$subTotal."</td>";
+                            $str.= "<td style='font-weight: bold;'>".$arrTotal['DSPORTAALTERADA']."</td>";
+                            $str.= "<td style='font-weight: bold;'>".$arrTotal['DSFECHADURAALTERADA']."</td>";
+                            $str.= "<td style='font-weight: bold;'>".$arrTotal['DSCADEADOALTERADO']."</td>";
+                            $str.= "<td style='font-weight: bold;'>".$arrTotal['DSJANELAALTERADA']."</td>";
+                            $str.= "<td style='font-weight: bold;'>".$arrTotal['DSPAREDEALTERADA']."</td>";
+                            $str.= "<td style='font-weight: bold;'>".$arrTotal['DSCERCAALTERADA']."</td>";
+                            $str.= "<td style='font-weight: bold;'>".$arrTotal['DSLUZESACESSAS']."</td>";
+                            foreach ($arrAreaAberta as $areas => $total):
+                                $str.= "<td style='font-weight: bold;'>".$total."</td>";
+                            endforeach;
+                        $str.= "</tr>";
+                    $str.= "</tbody>";
+                $str.= "</table>";
+            $str.= "</div>";
+        $str.= "</div>";
+
+        return $str;
+    }
+
+    private function RelatorioDiarioPDF(&$titulo) {
+        $titulo = "Diário".$this->post['DAMESREFERENCIA'];
+        $arrBinds = array(':DSMESREFERENCIA'=>array($this->post['DAMESREFERENCIA'], 'PARAM_STR'));
     }
 
     private function GeraPDF() {
-        define('MPDF_PATH', './mpdf/');
         require_once MPDF_PATH.'mpdf.php';
         ob_clean();
 
-        $mpdf = new mPDF('utf-8', 'A4');
-
+        $mpdf = new mPDF('utf-8', 'A4-P');
         switch($this->tipoRelatorio) {
             case 'A':
                 $mpdf->WriteHTML($this->RelatorioAreasAbertasPDF($titulo));
             break;
             case 'D':
-                $mpdf->WriteHTML($this->RelatorioAreasAbertasPDF($titulo));
+                $mpdf->WriteHTML($this->RelatorioDiarioPDF($titulo));
             break;
             case 'M':
-                $mpdf->WriteHTML($this->RelatorioAreasAbertasPDF($titulo));
+                $mpdf->WriteHTML($this->RelatorioMensalPDF($titulo));
             break;
         }
 
@@ -463,6 +764,7 @@ class Filter {
                             <div class="ibox-buttons">
                                 <?= HTML::AddButton('submit', 'btnSubmit', "Filtrar", ['class'=>'btn btn-primary']); ?>
                                 <?= HTML::AddButton('submit', 'btnPDF', "Exportar PDF", ['class'=>'btn btn-primary']); ?>
+                                <?= HTML::AddButton('submit', 'btnCSV', "Exportar CSV", ['class'=>'btn btn-primary']); ?>
                             </div>
                         </div>
                     </form>
@@ -477,6 +779,8 @@ class Filter {
 
         if (array_key_exists('btnPDF', $_POST)) {
             $this->GeraPDF();
+        } else if (array_key_exists('btnCSV', $_POST)){
+
         } else if (array_key_exists('btnSubmit', $_POST)) {
             $this->Relatorio();
         }

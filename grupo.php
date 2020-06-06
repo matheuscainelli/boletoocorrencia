@@ -5,7 +5,7 @@ $sql = "SELECT pa.*
         FROM grupo pa
 		WHERE TRUE";
 
-$form = new Form(ConsultaPermissao('CAD_grupo'), "Grupo");
+$form = new Form(ConsultaPermissao('CAD_GRUPO'), "Grupo");
 $form->SetSql($sql, 'grupo', 'IDGRUPO');
 $form->SetCamposSQL(['IDGRUPO', 'NMGRUPO']);
 

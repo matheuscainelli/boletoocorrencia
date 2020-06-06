@@ -338,5 +338,5 @@ function ValidaPermissao($sgPermissao) {
             WHERE p.SGPERMISSAO = :SGPERMISSAO";
     $permissao = Database::ExecutaSQLDados($sql, $arrBinds);
 
-    return $permissao[0]['FLCONSULTA'];
+    return $permissao[0]['FLCONSULTA'] ?? 'N';
 }

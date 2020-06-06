@@ -109,7 +109,6 @@ class Login {
                     FROM usuario pa
                     WHERE pa.SGUSUARIO = :SGUSUARIO  AND pa.PWUSUARIO = :PWUSUARIO AND pa.FLATIVO = 'S'";
             $this->arrDadosUsuario = Database::ExecutaSQLDados($sql, $arrBinds);
-
             if (array_key_exists(0, $this->arrDadosUsuario)) {
                 $this->arrDadosUsuario = $this->arrDadosUsuario[0];
                 $this->ConfiguraSession();
