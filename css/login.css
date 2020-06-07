@@ -65,6 +65,15 @@ body {
     margin: 35px 0;
     height: 180px;
 }
+#divLogin > div.alterasenha {
+    width: 380px;
+    border-radius: 0 15px 15px;
+    border: 1px solid #e6e6e6;
+    background: #efe7e7;
+    padding: 35px;
+    margin: 35px 0;
+    height: 230px;
+}
 #divLogin > div > h3 {
     font-size: 21px;
     text-align: left;

@@ -63,6 +63,7 @@ class Login {
                                     <?= HTML::AddInput('password', 'password', null, ['class'=>'form-control input-sm m-b', 'placeholder'=>'Senha', 'required'=>true]); ?>
                                 </div>
                                 <div class="inline-footer end">
+                                    <a class="btn btn-primary btn-outline" style='margin-right: 10px'  href="alterasenha.php">Altera Senha</a>
                                     <?= HTML::AddButton('submit', 'btnSubmit', 'Entrar', ['class'=>'btn btn-primary btn-sm']); ?>
                                 </div>
                             </form>
@@ -85,6 +86,80 @@ class Login {
         Session::Destroy();
     }
 
+    public function AltereSenha() {
+        ?>
+        <!DOCTYPE html>
+        <html>
+            <head>
+                <meta charset="utf-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <meta http-equiv="X-UA-Compatible" content="IE=edge">
+                <link rel="icon" type="imagem/png" href="img/icon.png" />
+                <title><?= nmSistema; ?></title>
+                <?php foreach ($this->arrCSS as $arr): ?>
+                    <link rel="stylesheet" href="<?= $arr[0]; ?>" <?= !empty($arr[1]) ? HTML::MontaAttrHtml($arr[1]) : null; ?>/>
+                <?php endforeach; ?>
+                <?php foreach ($this->arrJS as $arr): ?>
+                    <script src="<?= $arr[0]; ?>" <?= !empty($arr[1]) ? HTML::MontaAttrHtml($arr[1]) : null; ?>></script>
+                <?php endforeach; ?>
+            </head>
+            <body>
+                <div id="content" class="animated fadeInDown">
+                    <div id="divDescricao" class="col-md-7">
+                        <div style='margin-left: 10px'>
+                            <h3 class="logo-name">Bem-vindo ao Sistema<br/>
+                                <span><?= nmSistema; ?></span>
+                            </h3>
+                            <h3 class="logo-descricao"></h3>
+                            <span style='font-size: 19px'>Olá, <b><?=Session::Get('NMUSUARIO')?></b>. Como este é seu primeiro acesso, é necessário redefinir sua senha.</span>
+                            <br><span style='font-size: 19px'>Para prosseguir, preencha os campos ao lado!!!</span>
+                        </div>
+                    </div>
+                    <div id="divLogin" class="col-md-5">
+                        <div class='alterasenha'>
+                            <h3>Alterar Senha</h3>
+                            <form id="formLogin" class="inline-content" action='' method="POST" class="m-t">
+                                <div class="inline-body">
+                                    <?= HTML::AddInput('text', 'login', null, ['class'=>'form-control input-sm m-b', 'placeholder'=>'Usuário', 'autofocus'=>true, 'required'=>true]); ?>
+                                    <?= HTML::AddInput('password', 'password', null, ['class'=>'form-control input-sm m-b', 'placeholder'=>'Senha Atual', 'required'=>true]); ?>
+                                    <?= HTML::AddInput('password', 'passwordnew', null, ['class'=>'form-control input-sm m-b', 'placeholder'=>'Nova Senha', 'required'=>true]); ?>
+                                </div>
+                                <div class="inline-footer end">
+                                    <?= HTML::AddButton('submit', 'btnAlteraSenha', 'Alterar', ['class'=>'btn btn-primary btn-sm']); ?>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </body>
+        </html>
+        <?php
+
+        if (isset($_POST['btnAlteraSenha'])) {
+            $user = $_POST['login'];
+            $pass = $_POST['password'];
+            $passNew = $_POST['passwordnew'];
+
+            $arrBinds = array(':SGUSUARIO'=>array($user, 'PARAM_STR'),
+                              ':PWUSUARIO'=>array($pass, 'PARAM_STR'));
+
+            $sql = "SELECT pa.PWUSUARIO
+                    FROM usuario pa
+                    WHERE pa.SGUSUARIO = :SGUSUARIO  AND pa.PWUSUARIO = :PWUSUARIO AND pa.FLATIVO = 'S'";
+            $senha = Database::ExecutaSQLDados($sql, $arrBinds);
+            $senha = $senha[0]['PWUSUARIO'] ?? NULL;
+
+            if (md5($pass) <> $senha) {
+                echo HTML::AddAlerta('warning', 'Atenção! Senha Atual incorreta!!!');
+            } else {
+                Database::Edita('usuario', array('PWUSUARIO'=>$passNew, 'FLPRIMEIROACESSO'=>'N'), array('SGUSUARIO'=>$user));
+
+                header('location: login.php');
+                exit;
+            }
+        }
+    }
+
     public function Submit() {
         if (array_key_exists('logout', $_GET)) {
             $this->Logout();
@@ -96,7 +171,6 @@ class Login {
             header('location: index.php');
             exit;
         }
-
         $this->View();
 
         if (isset($_POST['btnSubmit'])) {
@@ -105,13 +179,18 @@ class Login {
             $arrBinds = array(':SGUSUARIO'=>array($user, 'PARAM_STR'),
                               ':PWUSUARIO'=>array($pass, 'PARAM_STR'));
 
-            $sql = "SELECT pa.IDUSUARIO, pa.NMUSUARIO, pa.SGUSUARIO, pa.IDPERFIL, pa.IDCAMPUS
+            $sql = "SELECT pa.IDUSUARIO, pa.NMUSUARIO, pa.SGUSUARIO, pa.IDPERFIL, pa.IDCAMPUS, pa.FLPRIMEIROACESSO
                     FROM usuario pa
                     WHERE pa.SGUSUARIO = :SGUSUARIO  AND pa.PWUSUARIO = :PWUSUARIO AND pa.FLATIVO = 'S'";
             $this->arrDadosUsuario = Database::ExecutaSQLDados($sql, $arrBinds);
             if (array_key_exists(0, $this->arrDadosUsuario)) {
                 $this->arrDadosUsuario = $this->arrDadosUsuario[0];
                 $this->ConfiguraSession();
+
+                if ($this->arrDadosUsuario['FLPRIMEIROACESSO'] === 'S') {
+                    header('location: alterasenha.php');
+                    exit;
+                }
 
                 header('location: index.php');
                 exit;
