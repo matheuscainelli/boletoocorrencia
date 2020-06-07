@@ -197,7 +197,7 @@ class Form {
                                                     <?php
                                                         foreach ($this->arrTable as $arr): ?>
                                                         <td <?= HTML::MontaAttrHtml($arr['arg']['attrTd'])?>>
-                                                    <?= array_key_exists($arr['name'], $arrVal) ? FormataValorUsuario(substr($arr['name'], 0, 2), $arrVal[$arr['name']]) : forward_static_call_array(["HTML", 'AjustaHTMLDados'], [$arr['name'], $arrVal]); ?>
+                                                            <?= array_key_exists($arr['name'], $arrVal) ? FormataValorUsuario(substr($arr['name'], 0, 2), $arrVal[$arr['name']]) : forward_static_call_array(["HTML", 'AjustaHTMLDados'], [$arr['name'], $arrVal]); ?>
                                                         </td>
                                                     <?php endforeach; ?>
                                                         <td>

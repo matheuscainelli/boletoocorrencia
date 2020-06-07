@@ -43,7 +43,7 @@ VerificaAcesso();
 
         <script type="text/javascript">
                 $(document).ready(function() {
-                    $('#tableCadastro').DataTable({
+                    $('#tableCadastro, #tableFilter').DataTable({
                         searching: false,
                         language: {
                             paginate: {
@@ -99,6 +99,7 @@ VerificaAcesso();
                                     MontaMenuPermissao('Vigilante', 'vigilante.php', ValidaPermissao('CAD_VIGILANTE'))
                                 );
                                 MenuCria('<i class="fa fa-wrench"></i>Tarefas',
+                                MontaMenuPermissao('Manutenção de Ocorrências', 'relmanutencao.php', ValidaPermissao('TAR_MANUTENCAO')).
                                     MontaMenuPermissao('Ocorrências', 'index.php', ValidaPermissao('CAD_OCORRENCIA'))
                                 );
                                 MenuCria('<i class="fa fa-search"></i>Consultas',

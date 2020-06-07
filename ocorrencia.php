@@ -3,7 +3,12 @@ require 'header.php';
 $filtro = " AND pa.IDUSUARIOINC = ".$_SESSION['IDUSUARIO'];
 $filtro .= " AND DATE_FORMAT(pa.DTOCORRENCIA , '%d/%m/%Y') = DATE_FORMAT(CURRENT_TIMESTAMP() , '%d/%m/%Y')";
 
-$sql = "SELECT pa.*, tp.NMOCORRENCIA, vg.NMVIGILANTE, CONCAT(pt.NMPOSTO, ' - ', a.NMAREA) NMPOSTOAREA
+$sql = "SELECT pa.*, tp.NMOCORRENCIA, vg.NMVIGILANTE, CONCAT(pt.NMPOSTO, ' - ', a.NMAREA) NMPOSTOAREA,
+               CASE pa.TPSTATUS
+                    WHEN 'E' THEN 'Encaminhada'
+					WHEN 'A' THEN 'Em Análise'
+					WHEN 'R' THEN 'Resolvida'
+				END TPSTATUS
         FROM ocorrencia pa
         JOIN tipoocorrencia tp ON pa.IDTIPOOCORRENCIA = tp.IDTIPOOCORRENCIA
         JOIN vigilante vg ON pa.IDVIGILANTE = vg.IDVIGILANTE
@@ -14,7 +19,7 @@ $sql = "SELECT pa.*, tp.NMOCORRENCIA, vg.NMVIGILANTE, CONCAT(pt.NMPOSTO, ' - ', 
 
 $form = new Form(ConsultaPermissao('CAD_OCORRENCIA'), "Ocorrências");
 $form->SetSql($sql, 'ocorrencia', 'IDOCORRENCIA');
-$form->SetCamposSQL(['IDOCORRENCIA', 'IDTIPOOCORRENCIA', 'IDVIGILANTE', 'IDPOSTOAREA', 'DTOCORRENCIA', 'DSOCORRENCIA']);
+$form->SetCamposSQL(['IDOCORRENCIA', 'IDTIPOOCORRENCIA', 'IDVIGILANTE', 'IDPOSTOAREA', 'DTOCORRENCIA', 'DSOCORRENCIA', 'TPSTATUS'=>'E']);
 $form->HabilitaAnexo(true, 'ocorrenciaanexo', 'IDOCORRENCIAANEXO');
 
 $form->AddTable('IDOCORRENCIA', 'Ocorrência', ['width'=>"20px"], ['align'=>"right"]);

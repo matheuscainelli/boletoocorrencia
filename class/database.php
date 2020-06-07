@@ -1,5 +1,4 @@
 <?php
-
 require_once './config/dbconfig.php';
 require_once 'class/funcoes.php';
 class Database {

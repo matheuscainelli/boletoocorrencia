@@ -15,8 +15,9 @@ class Filter {
     protected $post = [];
     protected $tipoRelatorio = NULL;
     private $arrGroup = [];
+    public $exportacao = true;
 
-    function __construct($permissao, $legend) {
+    function __construct($permissao, $legend, $sql = NULL) {
         if (!$permissao) {
             $this->MostraMensagemPermissao();
         }
@@ -27,6 +28,7 @@ class Filter {
         $this->setAction($_SERVER['PHP_SELF']);
         $this->post = $_POST;
         $this->tipoRelatorio = $this->post['TPRELATORIO'] ?? NULL;
+        $this->sql = $sql;
     }
 
     private function MostraMensagemPermissao() {
@@ -78,6 +80,10 @@ class Filter {
             ]
         ];
     }
+    
+    public function SetCamposSQL($arrCamposSQL) {
+        $this->arrCamposSQL = $arrCamposSQL;
+    }
 
     private function AjustaFieldGroupBySQL(&$arrGroupBy) {
         $arrGroupBy = [];
@@ -128,13 +134,6 @@ class Filter {
                             $comparacao = "$prefix.$field $operator :$nmCampo";
 
                             $arrBinds[":$nmCampo"] = $this->post[$nmCampo];
-                            break;
-                        case 'in':
-                        case 'not in':
-                            break;
-                        case 'between':
-                            break;
-                        case 'like':
                             break;
                     }
 
@@ -220,6 +219,10 @@ class Filter {
         return Database::ExecutaSqlDados($this->AjustaSQL(), $this->arrBinds);
     }
 
+    public function HabilitaExportacao($exportacao) {
+        $this->exportacao = $exportacao;
+    }
+
     public function GetCountDados() {
         $sql = "SELECT FOUND_ROWS() QTDADOS";
         $result = Database::ExecutaSqlDados($sql);
@@ -252,7 +255,8 @@ class Filter {
                             LEFT JOIN tipoocorrencia tp on tp.IDTIPOOCORRENCIA = pa.IDTIPOOCORRENCIA
                             WHERE tp.FLAREAABERTA = 'S' AND DATE_FORMAT(pa.DTOCORRENCIA , '%m/%Y') = :DSMESREFERENCIA
                             GROUP BY pa.IDPOSTOAREA, tp.IDTIPOOCORRENCIA, EXTRACT(DAY FROM pa.DTOCORRENCIA)
-                            ORDER BY NRDIA) sub on sub.IDTIPOOCORRENCIA = t.IDTIPOOCORRENCIA";
+                            ORDER BY NRDIA) sub on sub.IDTIPOOCORRENCIA = t.IDTIPOOCORRENCIA
+                WHERE t.FLAREAABERTA = 'S'";
         $arrDados = Database::MontaArrayChaveComposta($sql, $arrBinds, 'NMOCORRENCIA', 'NRDIA', array('TOTAL'));
         $arrTotal = [];
 
@@ -341,7 +345,8 @@ class Filter {
                             LEFT JOIN tipoocorrencia tp on tp.IDTIPOOCORRENCIA = pa.IDTIPOOCORRENCIA
                             WHERE tp.FLAREAABERTA = 'S' AND DATE_FORMAT(pa.DTOCORRENCIA , '%m/%Y') = :DSMESREFERENCIA
                             GROUP BY pa.IDPOSTOAREA, tp.IDTIPOOCORRENCIA, EXTRACT(DAY FROM pa.DTOCORRENCIA)
-                            ORDER BY NRDIA) sub on sub.IDTIPOOCORRENCIA = t.IDTIPOOCORRENCIA";
+                            ORDER BY NRDIA) sub on sub.IDTIPOOCORRENCIA = t.IDTIPOOCORRENCIA
+                WHERE t.FLAREAABERTA = 'S'";
         $arrDados = Database::MontaArrayChaveComposta($sql, $arrBinds, 'NMOCORRENCIA', 'NRDIA', array('TOTAL'));
         $arrTotal = [];
 
@@ -746,6 +751,40 @@ class Filter {
         exit();
     }
 
+    private function Table() {
+        $arrDados = $this->getDados();
+        ?>
+        <div class="ibox-body">
+            <div class="inline-content">
+                <div class="inline-body">
+                    <div class="table-responsive">
+                        <table id="tableFilter" class="table table-striped table-bordered table-hover">
+                            <thead>
+                                <tr>
+                                    <?php foreach ($this->arrTable as $arr): ?>
+                                        <th <?= HTML::MontaAttrHtml($arr['arg']['attrTh']); ?> ><?= $arr['arg']['caption']; ?></th>
+                                    <?php endforeach; ?>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($arrDados as $arrVal): ?>
+                                    <tr>
+                                        <?php foreach ($this->arrTable as $arr): ?>
+                                            <td <?= forward_static_call(["HTML", 'MontaAttrHtml'], $arr['arg']['attrTd']); ?>>
+                                                <?= array_key_exists($arr['name'], $arrVal) ? FormataValorUsuario(substr($arr['name'], 0, 2), $arrVal[$arr['name']]) : forward_static_call_array(["HTML", 'AjustaHTMLDados'], [$arr['name'], $arrVal]); ?>
+                                            </td>
+                                        <?php endforeach; ?>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <?php
+    }
+
     public function Filtros() {
         ?>
         <div class="ibox">
@@ -762,9 +801,14 @@ class Filter {
                             endforeach;
                             ?>
                             <div class="ibox-buttons">
-                                <?= HTML::AddButton('submit', 'btnSubmit', "Filtrar", ['class'=>'btn btn-primary']); ?>
-                                <?= HTML::AddButton('submit', 'btnPDF', "Exportar PDF", ['class'=>'btn btn-primary']); ?>
-                                <?= HTML::AddButton('submit', 'btnCSV', "Exportar CSV", ['class'=>'btn btn-primary']); ?>
+                                <?=HTML::AddButton('submit', 'btnFiltrar', "Filtrar", ['class'=>'btn btn-primary']); ?>
+                                <?php
+                                    if ($this->exportacao):
+                                        HTML::AddButton('submit', 'btnSubmit', "Filtrar", ['class'=>'btn btn-primary']);
+                                        HTML::AddButton('submit', 'btnPDF', "Exportar PDF", ['class'=>'btn btn-primary']);
+                                        HTML::AddButton('submit', 'btnCSV', "Exportar CSV", ['class'=>'btn btn-primary']);
+                                    endif;
+                                ?>
                             </div>
                         </div>
                     </form>
@@ -783,6 +827,8 @@ class Filter {
 
         } else if (array_key_exists('btnSubmit', $_POST)) {
             $this->Relatorio();
+        } else if (array_key_exists('btnFiltrar', $_POST)) {
+            $this->Table();
         }
      }
 }
