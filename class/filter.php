@@ -283,7 +283,7 @@ class Filter {
                         </tr>
                     </thead>
                 </table>
-                <table  id='tableFilter' class='table table-striped table-bordered table-hover'>
+                <table  id='tableFilter1' class='table table-striped table-bordered table-hover'>
                     <thead>
                         <tr>
                             <th colspan='1' style='width:17.8%'>Ocorrência</th>
@@ -419,6 +419,167 @@ class Filter {
         return $str;
     }
 
+    private function RelatorioAreasAbertasCSV() {
+        $titulo = "Áreas Abertas ".$this->post['DAMESREFERENCIA'];
+        $arrBinds = array(':DSMESREFERENCIA'=>array($this->post['DAMESREFERENCIA'], 'PARAM_STR'));
+
+        $sql = "SELECT COALESCE(sub.TOTAL, 0) AS TOTAL, COALESCE(sub.NRDIA, 1) AS NRDIA, t.NMOCORRENCIA 
+                FROM tipoocorrencia t
+                LEFT JOIN (SELECT COUNT(pa.IDTIPOOCORRENCIA) TOTAL, EXTRACT(DAY FROM pa.DTOCORRENCIA) NRDIA,
+                                tP.IDTIPOOCORRENCIA 
+                            FROM ocorrencia pa
+                            LEFT JOIN tipoocorrencia tp on tp.IDTIPOOCORRENCIA = pa.IDTIPOOCORRENCIA
+                            WHERE tp.FLAREAABERTA = 'S' AND DATE_FORMAT(pa.DTOCORRENCIA , '%m/%Y') = :DSMESREFERENCIA
+                            GROUP BY pa.IDPOSTOAREA, tp.IDTIPOOCORRENCIA, EXTRACT(DAY FROM pa.DTOCORRENCIA)
+                            ORDER BY NRDIA) sub on sub.IDTIPOOCORRENCIA = t.IDTIPOOCORRENCIA
+                WHERE t.FLAREAABERTA = 'S'";
+        $arrDados = Database::MontaArrayChaveComposta($sql, $arrBinds, 'NMOCORRENCIA', 'NRDIA', array('TOTAL'));
+        $arrTotal = [];
+
+        for ($i = 1; $i <= 31; $i++) {
+            foreach ($arrDados as $nmOcorrencia => $dia) {
+                $arrTotal[$i] = 0;
+                if (!array_key_exists($i, $dia)) {
+                    $arrDados[$nmOcorrencia][$i]['TOTAL'] = 0;
+                    ksort($arrDados[$nmOcorrencia]);
+                }
+            }
+        }
+
+        ob_end_clean();
+        header("content-type:application/csv;charset=UTF-8");
+        header("Content-Disposition: attachment; filename=" . str_replace(" ", "_", trim(str_replace(",", " ", strtolower($titulo)))) . ".csv");
+        header("Pragma: no-cache");
+
+        echo iconv('UTF-8', 'Windows-1252', 'Ocorrência;');
+        for ($i = 1; $i <= 31; $i++) {
+            echo iconv('UTF-8', 'Windows-1252', $i.';');
+        }
+        echo iconv('UTF-8', 'Windows-1252', 'Sub-Total;');
+        print "\n";
+
+        foreach ($arrDados as $ocorrencia => $total):
+            $ocorrencias = 0;
+            echo iconv('UTF-8', 'Windows-1252', $ocorrencia.';');
+            foreach ($total as $dia => $vlOcorrencia):
+                $ocorrencias += $vlOcorrencia['TOTAL']; 
+                $arrTotal[$dia] += $vlOcorrencia['TOTAL'];
+                echo iconv('UTF-8', 'Windows-1252', $vlOcorrencia['TOTAL'].';');
+            endforeach;
+                echo iconv('UTF-8', 'Windows-1252', $ocorrencias.';');
+                print "\n";
+        endforeach;
+
+        echo iconv('UTF-8', 'Windows-1252', 'Sub-Total por Dia;');
+        foreach ($arrTotal as $dia => $totalDia):
+            echo iconv('UTF-8', 'Windows-1252', $totalDia.';');
+        endforeach;
+        echo iconv('UTF-8', 'Windows-1252', array_sum($arrTotal).';');
+
+        die('');
+    }
+
+    private function RelatorioDiarioCSV() {
+
+    }
+
+    private function RelatorioMensalCSV() {
+        $titulo = "Mensal ".$this->post['DAMESREFERENCIA'];
+        $arrBinds = array(':DSMESREFERENCIA'=>array($this->post['DAMESREFERENCIA'], 'PARAM_STR'));
+
+        $sql = "SELECT pa.IDPOSTOAREA, CONCAT(p.NMPOSTO, ' - ', a.NMAREA) as DSUNIDADE,
+                      (SELECT COUNT(o.IDOCORRENCIA) FROM ocorrencia o WHERE o.IDPOSTOAREA = pa.IDPOSTOAREA && o.IDTIPOOCORRENCIA = 23 AND DATE_FORMAT(o.DTOCORRENCIA , '%m/%Y') = :DSMESREFERENCIA) AS DSPORTAALTERADA,
+                      (SELECT COUNT(o.IDOCORRENCIA) FROM ocorrencia o WHERE o.IDPOSTOAREA = pa.IDPOSTOAREA && o.IDTIPOOCORRENCIA = 24 AND DATE_FORMAT(o.DTOCORRENCIA , '%m/%Y') = :DSMESREFERENCIA) AS DSFECHADURAALTERADA,
+                      (SELECT COUNT(o.IDOCORRENCIA) FROM ocorrencia o WHERE o.IDPOSTOAREA = pa.IDPOSTOAREA && o.IDTIPOOCORRENCIA = 25 AND DATE_FORMAT(o.DTOCORRENCIA , '%m/%Y') = :DSMESREFERENCIA) AS DSCADEADOALTERADO,
+                      (SELECT COUNT(o.IDOCORRENCIA) FROM ocorrencia o WHERE o.IDPOSTOAREA = pa.IDPOSTOAREA && o.IDTIPOOCORRENCIA = 26 AND DATE_FORMAT(o.DTOCORRENCIA , '%m/%Y') = :DSMESREFERENCIA) AS DSJANELAALTERADA,
+                      (SELECT COUNT(o.IDOCORRENCIA) FROM ocorrencia o WHERE o.IDPOSTOAREA = pa.IDPOSTOAREA && o.IDTIPOOCORRENCIA = 27 AND DATE_FORMAT(o.DTOCORRENCIA , '%m/%Y') = :DSMESREFERENCIA) AS DSPAREDEALTERADA,
+                      (SELECT COUNT(o.IDOCORRENCIA) FROM ocorrencia o WHERE o.IDPOSTOAREA = pa.IDPOSTOAREA && o.IDTIPOOCORRENCIA = 28 AND DATE_FORMAT(o.DTOCORRENCIA , '%m/%Y') = :DSMESREFERENCIA) AS DSCERCAALTERADA,
+                      (SELECT COUNT(o.IDOCORRENCIA) FROM ocorrencia o WHERE o.IDPOSTOAREA = pa.IDPOSTOAREA && o.IDTIPOOCORRENCIA = 29 AND DATE_FORMAT(o.DTOCORRENCIA , '%m/%Y') = :DSMESREFERENCIA) AS DSLUZESACESSAS
+                FROM postoarea pa
+                JOIN posto p ON p.IDPOSTO = pa.IDPOSTO
+                JOIN area a ON a.IDAREA = pa.IDAREA
+                ORDER BY pa.IDPOSTOAREA ASC";
+
+        $arrOcorrencias = DataBase::MontaArrayNCampos($sql, $arrBinds, 'DSUNIDADE', array('DSPORTAALTERADA', 'DSFECHADURAALTERADA', 'DSCADEADOALTERADO', 'DSJANELAALTERADA', 'DSPAREDEALTERADA', 'DSCERCAALTERADA', 'DSLUZESACESSAS'));
+        $arrTotal = array('DSPORTAALTERADA'=>0, 'DSFECHADURAALTERADA'=>0, 'DSCADEADOALTERADO'=>0, 'DSJANELAALTERADA'=>0, 'DSPAREDEALTERADA'=>0, 'DSCERCAALTERADA'=>0, 'DSLUZESACESSAS'=>0);
+
+        foreach ($arrOcorrencias as $unidade => $valor) {
+            $arrTotal['DSPORTAALTERADA'] += $valor['DSPORTAALTERADA'];
+            $arrTotal['DSFECHADURAALTERADA'] += $valor['DSFECHADURAALTERADA'];
+            $arrTotal['DSCADEADOALTERADO'] += $valor['DSCADEADOALTERADO'];
+            $arrTotal['DSJANELAALTERADA'] += $valor['DSJANELAALTERADA'];
+            $arrTotal['DSPAREDEALTERADA'] += $valor['DSPAREDEALTERADA'];
+            $arrTotal['DSCERCAALTERADA'] += $valor['DSCERCAALTERADA'];
+            $arrTotal['DSLUZESACESSAS'] += $valor['DSLUZESACESSAS'];
+        }
+
+        $subTotal = array_sum($arrTotal);
+        $sql = "SELECT COALESCE(sub.TOTAL, 0) AS TOTAL, t.NMOCORRENCIA 
+                FROM tipoocorrencia t
+                LEFT JOIN (SELECT COUNT(pa.IDTIPOOCORRENCIA) TOTAL,
+                                 tP.IDTIPOOCORRENCIA 
+                           FROM ocorrencia pa
+                           LEFT JOIN tipoocorrencia tp on tp.IDTIPOOCORRENCIA = pa.IDTIPOOCORRENCIA
+                           WHERE tp.FLAREAABERTA = 'S' AND DATE_FORMAT(pa.DTOCORRENCIA , '%m/%Y') = :DSMESREFERENCIA
+                           GROUP BY pa.IDPOSTOAREA, tp.IDTIPOOCORRENCIA) sub on sub.IDTIPOOCORRENCIA = t.IDTIPOOCORRENCIA
+                WHERE t.FLAREAABERTA = 'S'";
+
+        $arrAreaAberta = DataBase::MontaArraySelect($sql, $arrBinds, 'NMOCORRENCIA', 'TOTAL');
+        $subTotalAreas = array_sum($arrAreaAberta);
+        $subTotal += $subTotalAreas;
+
+        $sql = "SELECT pa.NMOCORRENCIA
+                FROM tipoocorrencia pa
+                ORDER BY pa.IDTIPOOCORRENCIA";
+        $arrNmOcorrencia = Database::MontaArraySelect($sql, array(), 'NMOCORRENCIA', 'NMOCORRENCIA');
+    
+        ob_end_clean();
+        header("content-type:application/csv;charset=UTF-8");
+        header("Content-Disposition: attachment; filename=" . str_replace(" ", "_", trim(str_replace(",", " ", strtolower($titulo)))) . ".csv");
+        header("Pragma: no-cache");
+
+        echo iconv('UTF-8', 'Windows-1252', 'Unidade;Total Mês;');
+
+        foreach ($arrNmOcorrencia as $nome) {
+            echo iconv('UTF-8', 'Windows-1252', $nome.';');
+        }
+        print "\n";
+
+        foreach ($arrOcorrencias as $unidade => $totalOcorrencias): 
+            $totalUnidade = array_sum($totalOcorrencias);
+            echo iconv('UTF-8', 'Windows-1252', $unidade.';'.$totalUnidade.';');
+            echo iconv('UTF-8', 'Windows-1252', $totalOcorrencias['DSPORTAALTERADA'].';'.$totalOcorrencias['DSFECHADURAALTERADA'].';');
+            echo iconv('UTF-8', 'Windows-1252', $totalOcorrencias['DSCADEADOALTERADO'].';'.$totalOcorrencias['DSJANELAALTERADA'].';');
+            echo iconv('UTF-8', 'Windows-1252', $totalOcorrencias['DSPAREDEALTERADA'].';'.$totalOcorrencias['DSCERCAALTERADA'].';');
+            echo iconv('UTF-8', 'Windows-1252', $totalOcorrencias['DSLUZESACESSAS'].';');
+            for($i = 0; $i < 22; $i++):
+                echo iconv('UTF-8', 'Windows-1252', ';');
+            endfor;
+            print "\n";
+        endforeach;
+
+        echo iconv('UTF-8', 'Windows-1252', 'Áreas Abertas;'.$subTotalAreas.';');
+        for($i = 1; $i < 8; $i++):
+            echo iconv('UTF-8', 'Windows-1252', ';');
+        endfor;
+        foreach ($arrAreaAberta as $areas => $total):
+            echo iconv('UTF-8', 'Windows-1252', $total.';');
+        endforeach;
+
+        print "\n";
+        echo iconv('UTF-8', 'Windows-1252', 'Sub-Total Mês;'.$subTotal.';');
+        echo iconv('UTF-8', 'Windows-1252', $arrTotal['DSPORTAALTERADA'].';'.$arrTotal['DSFECHADURAALTERADA'].';');
+        echo iconv('UTF-8', 'Windows-1252', $arrTotal['DSCADEADOALTERADO'].';'.$arrTotal['DSJANELAALTERADA'].';');
+        echo iconv('UTF-8', 'Windows-1252', $arrTotal['DSPAREDEALTERADA'].';'.$arrTotal['DSCERCAALTERADA'].';');
+        echo iconv('UTF-8', 'Windows-1252', $arrTotal['DSLUZESACESSAS'].';');
+
+        foreach ($arrAreaAberta as $areas => $total):
+            echo iconv('UTF-8', 'Windows-1252', $total.';');
+        endforeach;
+
+        die('');
+    }
+
     private function RelatorioDiario() {
 
     }
@@ -468,7 +629,7 @@ class Filter {
         ?>
         <div class='inline-content ibox'>
             <div class='inline-body table-responsive'>
-                <table id='tableFilter' class='table table-striped table-bordered table-hover'>
+                <table id='tableFilter1' class='table table-striped table-bordered table-hover'>
                     <thead>
                         <tr>
                             <th style='width: 1%'>Unidade</th>
@@ -751,6 +912,23 @@ class Filter {
         exit();
     }
 
+    private function GeraCSV() {
+        ob_clean();
+        switch($this->tipoRelatorio) {
+            case 'A':
+                $this->RelatorioAreasAbertasCSV();
+            break;
+            case 'D':
+               $this->RelatorioDiarioCSV();
+            break;
+            case 'M':
+                $this->RelatorioMensalCSV();
+            break;
+        }
+    
+        exit;
+    }
+
     private function Table() {
         $arrDados = $this->getDados();
         ?>
@@ -801,12 +979,14 @@ class Filter {
                             endforeach;
                             ?>
                             <div class="ibox-buttons">
-                                <?=HTML::AddButton('submit', 'btnFiltrar', "Filtrar", ['class'=>'btn btn-primary']); ?>
                                 <?php
                                     if ($this->exportacao):
-                                        HTML::AddButton('submit', 'btnSubmit', "Filtrar", ['class'=>'btn btn-primary']);
-                                        HTML::AddButton('submit', 'btnPDF', "Exportar PDF", ['class'=>'btn btn-primary']);
-                                        HTML::AddButton('submit', 'btnCSV', "Exportar CSV", ['class'=>'btn btn-primary']);
+                                        echo HTML::AddButton('submit', 'btnSubmit', "Filtrar", ['class'=>'btn btn-primary']);
+                                        echo HTML::AddButton('submit', 'btnPDF', "Exportar PDF", ['class'=>'btn btn-primary']);
+                                        echo HTML::AddButton('submit', 'btnCSV', "Exportar CSV", ['class'=>'btn btn-primary']);
+
+                                    else:
+                                        echo HTML::AddButton('submit', 'btnFiltrar', "Filtrar", ['class'=>'btn btn-primary']);
                                     endif;
                                 ?>
                             </div>
@@ -824,7 +1004,7 @@ class Filter {
         if (array_key_exists('btnPDF', $_POST)) {
             $this->GeraPDF();
         } else if (array_key_exists('btnCSV', $_POST)){
-
+            $this->GeraCSV();
         } else if (array_key_exists('btnSubmit', $_POST)) {
             $this->Relatorio();
         } else if (array_key_exists('btnFiltrar', $_POST)) {

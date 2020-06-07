@@ -2,7 +2,7 @@
 require 'header.php';
 
 $filter = New Filter(ConsultaPermissao('REL_GERENCIAL'), "Relatório Gerencial");
-
+$filter->HabilitaExportacao(true);
 $filter->AddSelect('TPRELATORIO', 'Tipo', ['M'=>'Mensal', 'D'=>'Diário', 'A'=>'Áreas Abertas'], ['required'=>true, 'placeholder'=>"Selecione:", 'class'=>"form-control input-sm"]);
 $filter->AddSelect('IDGRUPO', 'Grupo', BuscaArrGrupo(), ['required'=>true, 'placeholder'=>"Selecione:", 'class'=>"form-control input-sm"]);
 $filter->AddInput('text', 'DAMESREFERENCIA', 'Mês/Referência', ['required'=>true, 'class'=>"form-control input-sm"]);

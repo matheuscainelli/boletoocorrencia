@@ -79,7 +79,7 @@ $arrAnalise = Database::ExecutaSQLDados($sql, $arrBinds);
                 <br/>
                 <hr/>
                 <div class="ibox-buttons" style='margin-bottom: 10px; float:right'>
-                    <a class="btn btn-primary btn-outline"  href="index.php">Voltar</a>
+                    <a class="btn btn-primary btn-outline" id='btnVoltar'>Voltar</a>
                     <?php
                         if ($arrOcorrenciaStatus[0]['TPSTATUS'] === 'A' || $arrOcorrenciaStatus[0]['TPSTATUS'] === 'E') {
                             echo  HTML::AddButton('button', 'btnSalvar', "Salvar", ['class'=>'btn btn-primary', 'onclick'=>'SalvaAnalise('.$idOcorrencia.')']);
@@ -105,6 +105,11 @@ $arrAnalise = Database::ExecutaSQLDados($sql, $arrBinds);
             ],
         });
     });
+
+    $('#btnVoltar').on('click', function() {
+        window.close();
+    })
+
     function AbreArquivo(idArquivo) {
         window.open('ajax.php?funcao=DownloadArquivo&IDANEXO='+idArquivo, '_blank');
     }
@@ -134,7 +139,7 @@ $arrAnalise = Database::ExecutaSQLDados($sql, $arrBinds);
             },
             type: 'POST',
             success: function (ret) {
-                window.location.href = 'index.php';
+                window.close();
             }
         });
     }
