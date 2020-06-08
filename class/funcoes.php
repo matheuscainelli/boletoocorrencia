@@ -267,12 +267,14 @@ function BuscaArrPerfil() {
 }
 
 function BuscaArrPostoArea() {
+    $arrBinds = array(':IDCAMPUS'=>array(Session::Get('IDCAMPUS', 'PARAM_INT')));
     $sql = "SELECT pa.IDPOSTOAREA, concat(po.NMPOSTO, ' - ', a.NMAREA) NMPOSTOAREA
             FROM postoarea pa
             JOIN area a ON pa.IDAREA = a.IDAREA
-            JOIN posto po ON pa.IDPOSTO = po.IDPOSTO";
+            JOIN posto po ON pa.IDPOSTO = po.IDPOSTO
+            WHERE pa.IDCAMPUS = :IDCAMPUS";
 
-    return Database::MontaArraySelect($sql, [], 'IDPOSTOAREA', 'NMPOSTOAREA');
+    return Database::MontaArraySelect($sql, $arrBinds, 'IDPOSTOAREA', 'NMPOSTOAREA');
 }
 
 function BuscaArrCampus() {
