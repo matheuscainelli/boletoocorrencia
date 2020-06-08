@@ -240,6 +240,10 @@ class Database {
         return Database::MontaArraySelectDinamico($sql, $arrBinds, [$campo1=>[$campo2=>$campo3]]);
     }
 
+    public static function MontaArrayChaveComposta3($sql, $arrBinds, $campo1, $campo2, $campo3, $campo4 = []) {
+        return Database::MontaArraySelectDinamico($sql, $arrBinds, [$campo1=>[$campo2=>[$campo3=>$campo4]]]);
+    }
+
     public static function BuscaMaxSequencia($nmTabela) {
         $nmCampo = 'ID'.strtoupper($nmTabela);
         $sql = "SELECT COALESCE(MAX(pa.$nmCampo), 0)+1 IDSEQUENCIA

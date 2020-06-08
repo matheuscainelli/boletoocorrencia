@@ -480,7 +480,95 @@ class Filter {
     }
 
     private function RelatorioDiarioCSV() {
+        $titulo = "Diário ".$this->post['DAMESREFERENCIA'];
 
+        $arrBinds = array(':IDGRUPO'=>array($this->post['IDGRUPO'], 'PARAM_STR'));
+        $sql = "SELECT p.IDPOSTOAREA
+                FROM postoarea p 
+                JOIN area a on a.IDAREA = p.IDAREA 
+                WHERE a.IDGRUPO = :IDGRUPO";
+        $arrGrupo = Database::ExecutaSQLDados($sql, $arrBinds);
+        $total = count($arrGrupo);
+
+        $arrBinds = array(':DSMESREFERENCIA'=>array($this->post['DAMESREFERENCIA'], 'PARAM_STR'));
+        $sql = "";
+
+        for ($i = 0; $i < $total; $i++) {
+            $idarea = $arrGrupo[$i]['IDPOSTOAREA'];
+
+            $arrBinds[':IDPOSTOAREA_'. $idarea] = array( $idarea, 'PARAM_INT');
+            $sql .= "(SELECT (SELECT concat(p.NMPOSTO, ' - ', a.NMAREA) DSUNIDADE 
+                              FROM postoarea pa
+                              JOIN area a on a.IDAREA = pa.IDAREA 
+                              JOIN posto p on p.IDPOSTO = pa.IDPOSTO
+                              WHERE pa.IDPOSTOAREA = :IDPOSTOAREA_". $idarea."
+                              limit 1) DSUNIDADE, t.NMOCORRENCIA, COALESCE(sub.TOTAL, 0) TOTAL, sub.NRDIA
+                    FROM tipoocorrencia t
+                    LEFT JOIN (SELECT COUNT(pa.IDTIPOOCORRENCIA) TOTAL, EXTRACT(DAY FROM pa.DTOCORRENCIA) NRDIA, tP.IDTIPOOCORRENCIA 
+                                FROM ocorrencia pa
+                                LEFT JOIN tipoocorrencia tp on tp.IDTIPOOCORRENCIA = pa.IDTIPOOCORRENCIA
+                                WHERE tp.FLAREAABERTA = 'N' AND DATE_FORMAT(pa.DTOCORRENCIA , '%m/%Y') = :DSMESREFERENCIA
+                                AND pa.IDPOSTOAREA = :IDPOSTOAREA_". $idarea."
+                                GROUP BY pa.IDPOSTOAREA, tp.IDTIPOOCORRENCIA, EXTRACT(DAY FROM pa.DTOCORRENCIA)
+                                ORDER BY NRDIA) sub on sub.IDTIPOOCORRENCIA = t.IDTIPOOCORRENCIA
+                                where t.FLAREAABERTA  = 'N')";
+
+            if ($i < $total - 1)
+                $sql .= "\n\nUNION ALL\n\n";
+        }
+
+        $arrOcorrenciasDiarias = Database::MontaArrayChaveComposta3($sql, $arrBinds, 'DSUNIDADE', 'NMOCORRENCIA', 'NRDIA', array('TOTAL'));
+        $arrTotal = array();
+        for ($i = 1; $i <= 31; $i++) {
+            foreach ($arrOcorrenciasDiarias as $unidade => $arrOcorrencia) {
+                foreach ($arrOcorrencia as $nmOcorrencia => $dia) {
+                    $arrTotal[$i] = 0;
+                    if (!array_key_exists($i, $dia)) {
+                        $arrOcorrenciasDiarias[$unidade][$nmOcorrencia][$i]['TOTAL'] = 0;
+                        ksort($arrOcorrenciasDiarias[$unidade][$nmOcorrencia]);
+                    }
+                }
+            }
+        }
+
+        ob_end_clean();
+        header("content-type:application/csv;charset=UTF-8");
+        header("Content-Disposition: attachment; filename=" . str_replace(" ", "_", trim(str_replace(",", " ", strtolower($titulo)))) . ".csv");
+        header("Pragma: no-cache");
+
+        echo iconv('UTF-8', 'Windows-1252', 'Unidade;Ocorrência;');
+
+        for ($i = 1; $i <= 31; $i++) {
+            echo iconv('UTF-8', 'Windows-1252', $i.';');
+        }
+        echo iconv('UTF-8', 'Windows-1252', 'Sub-Total');
+        print "\n";
+
+        foreach ($arrOcorrenciasDiarias as $unidade => $arrDadosOcorrencia):
+            echo iconv('UTF-8', 'Windows-1252', $unidade);
+
+            foreach ($arrDadosOcorrencia as $ocorrencia => $arrDia): 
+                $ocorrencias = 0;
+                echo iconv('UTF-8', 'Windows-1252', ';'.$ocorrencia.';');
+                foreach ($arrDia as $dia => $total): 
+                    if ($dia <> NULL):
+                        $ocorrencias += $total['TOTAL']; 
+                        $arrTotal[$dia] += $total['TOTAL'];
+                        echo iconv('UTF-8', 'Windows-1252', $total['TOTAL'].';');
+                    endif;
+                endforeach;
+                echo iconv('UTF-8', 'Windows-1252', $ocorrencias.';');
+                print "\n";
+            endforeach;
+        endforeach;
+
+        echo iconv('UTF-8', 'Windows-1252', 'Sub-Total por Dia;;');
+        foreach ($arrTotal as $dia => $totalDia):
+            echo iconv('UTF-8', 'Windows-1252', $totalDia.';');
+        endforeach;
+        echo iconv('UTF-8', 'Windows-1252', array_sum($arrTotal).';');
+
+        die('');
     }
 
     private function RelatorioMensalCSV() {
@@ -581,7 +669,114 @@ class Filter {
     }
 
     private function RelatorioDiario() {
+        $arrBinds = array(':IDGRUPO'=>array($this->post['IDGRUPO'], 'PARAM_STR'));
+        $sql = "SELECT p.IDPOSTOAREA
+                FROM postoarea p 
+                JOIN area a on a.IDAREA = p.IDAREA 
+                WHERE a.IDGRUPO = :IDGRUPO";
+        $arrGrupo = Database::ExecutaSQLDados($sql, $arrBinds);
+        $total = count($arrGrupo);
 
+        $arrBinds = array(':DSMESREFERENCIA'=>array($this->post['DAMESREFERENCIA'], 'PARAM_STR'));
+        $sql = "";
+
+        for ($i = 0; $i < $total; $i++) {
+            $idarea = $arrGrupo[$i]['IDPOSTOAREA'];
+
+            $arrBinds[':IDPOSTOAREA_'. $idarea] = array( $idarea, 'PARAM_INT');
+            $sql .= "(SELECT (SELECT concat(p.NMPOSTO, ' - ', a.NMAREA) DSUNIDADE 
+                              FROM postoarea pa
+                              JOIN area a on a.IDAREA = pa.IDAREA 
+                              JOIN posto p on p.IDPOSTO = pa.IDPOSTO
+                              WHERE pa.IDPOSTOAREA = :IDPOSTOAREA_". $idarea."
+                              limit 1) DSUNIDADE, t.NMOCORRENCIA, COALESCE(sub.TOTAL, 0) TOTAL, sub.NRDIA
+                    FROM tipoocorrencia t
+                    LEFT JOIN (SELECT COUNT(pa.IDTIPOOCORRENCIA) TOTAL, EXTRACT(DAY FROM pa.DTOCORRENCIA) NRDIA, tP.IDTIPOOCORRENCIA 
+                                FROM ocorrencia pa
+                                LEFT JOIN tipoocorrencia tp on tp.IDTIPOOCORRENCIA = pa.IDTIPOOCORRENCIA
+                                WHERE tp.FLAREAABERTA = 'N' AND DATE_FORMAT(pa.DTOCORRENCIA , '%m/%Y') = :DSMESREFERENCIA
+                                AND pa.IDPOSTOAREA = :IDPOSTOAREA_". $idarea."
+                                GROUP BY pa.IDPOSTOAREA, tp.IDTIPOOCORRENCIA, EXTRACT(DAY FROM pa.DTOCORRENCIA)
+                                ORDER BY NRDIA) sub on sub.IDTIPOOCORRENCIA = t.IDTIPOOCORRENCIA
+                                where t.FLAREAABERTA  = 'N')";
+
+            if ($i < $total - 1)
+                $sql .= "\n\nUNION ALL\n\n";
+        }
+
+        $arrOcorrenciasDiarias = Database::MontaArrayChaveComposta3($sql, $arrBinds, 'DSUNIDADE', 'NMOCORRENCIA', 'NRDIA', array('TOTAL'));
+        $arrTotal = array();
+        for ($i = 1; $i <= 31; $i++) {
+            foreach ($arrOcorrenciasDiarias as $unidade => $arrOcorrencia) {
+                foreach ($arrOcorrencia as $nmOcorrencia => $dia) {
+                    $arrTotal[$i] = 0;
+                    if (!array_key_exists($i, $dia)) {
+                        $arrOcorrenciasDiarias[$unidade][$nmOcorrencia][$i]['TOTAL'] = 0;
+                        ksort($arrOcorrenciasDiarias[$unidade][$nmOcorrencia]);
+                    }
+                }
+            }
+        }
+        ?>
+        
+        <div class='inline-content ibox'>
+            <div class='inline-body table-responsive'>
+                <table id='tableFilter1' class='table table-striped table-bordered table-hover'>
+                    <tbody>
+                        <tr style='font-weight: bold;'>
+                            <td style="width:5%;">Unidade</td>
+                            <td style="width:11%">Ocorrência</td>
+                            <?php
+                                for ($i = 1; $i <= 31; $i++): ?>
+                                    <td style='width: 2%;'><?=$i; ?></td>
+                                <?php
+                                endfor;
+                            ?>
+                            <td style="width:5%">Sub-Total</td>
+                        </tr>
+                        <?php
+                            foreach ($arrOcorrenciasDiarias as $unidade => $arrDadosOcorrencia): ?>
+                                <tr>
+                                    <td colspan="1" rowspan="8" style="width:5%; text-align: center; vertical-align: middle;"><?= $unidade; ?></td>
+                                    <?php
+                                        foreach ($arrDadosOcorrencia as $ocorrencia => $arrDia): 
+                                            $ocorrencias = 0;?>
+                                            <tr>
+                                            <td style="width:11%"><?= $ocorrencia; ?></td>
+                                            <?php
+                                                foreach ($arrDia as $dia => $total): 
+                                                    if ($dia <> NULL):
+                                                        $ocorrencias += $total['TOTAL']; 
+                                                        $arrTotal[$dia] += $total['TOTAL']; ?>
+                                                        <td style="width:2%"><?=$total['TOTAL']?></td>
+                                                <?php
+                                                endif;
+                                                endforeach;
+                                            ?>
+                                            <td style="width:2%"><?= $ocorrencias?></td>
+                                        </tr>
+                                        <?php
+                                        endforeach;
+                                    ?>
+                                </tr>
+                            <?php
+                            endforeach;
+                            foreach ($arrTotal as $dia => $totalDia)
+                                
+                        ?>
+                        <tr style='font-weight: bold'>
+                            <td colspan='2' style='width:15.8%; text-align: center;'>Sub-Total por Dia</td>
+                                <?php
+                                    foreach ($arrTotal as $dia => $totalDia): ?>
+                                        <td colspan='1' style='width: 2%;'><?= $totalDia ?></td>
+                                <?php endforeach; ?>
+                                <td colspan='1' style='width: 5%'><?= array_sum($arrTotal); ?></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <?php
     }
 
     private function RelatorioMensal() {
@@ -886,7 +1081,113 @@ class Filter {
 
     private function RelatorioDiarioPDF(&$titulo) {
         $titulo = "Diário".$this->post['DAMESREFERENCIA'];
+        $arrBinds = array(':IDGRUPO'=>array($this->post['IDGRUPO'], 'PARAM_STR'));
+        $sql = "SELECT p.IDPOSTOAREA
+                FROM postoarea p 
+                JOIN area a on a.IDAREA = p.IDAREA 
+                WHERE a.IDGRUPO = :IDGRUPO";
+        $arrGrupo = Database::ExecutaSQLDados($sql, $arrBinds);
+        $total = count($arrGrupo);
+
         $arrBinds = array(':DSMESREFERENCIA'=>array($this->post['DAMESREFERENCIA'], 'PARAM_STR'));
+        $sql = "";
+
+        for ($i = 0; $i < $total; $i++) {
+            $idarea = $arrGrupo[$i]['IDPOSTOAREA'];
+
+            $arrBinds[':IDPOSTOAREA_'. $idarea] = array( $idarea, 'PARAM_INT');
+            $sql .= "(SELECT (SELECT concat(p.NMPOSTO, ' - ', a.NMAREA) DSUNIDADE 
+                              FROM postoarea pa
+                              JOIN area a on a.IDAREA = pa.IDAREA 
+                              JOIN posto p on p.IDPOSTO = pa.IDPOSTO
+                              WHERE pa.IDPOSTOAREA = :IDPOSTOAREA_". $idarea."
+                              limit 1) DSUNIDADE, t.NMOCORRENCIA, COALESCE(sub.TOTAL, 0) TOTAL, sub.NRDIA
+                    FROM tipoocorrencia t
+                    LEFT JOIN (SELECT COUNT(pa.IDTIPOOCORRENCIA) TOTAL, EXTRACT(DAY FROM pa.DTOCORRENCIA) NRDIA, tP.IDTIPOOCORRENCIA 
+                                FROM ocorrencia pa
+                                LEFT JOIN tipoocorrencia tp on tp.IDTIPOOCORRENCIA = pa.IDTIPOOCORRENCIA
+                                WHERE tp.FLAREAABERTA = 'N' AND DATE_FORMAT(pa.DTOCORRENCIA , '%m/%Y') = :DSMESREFERENCIA
+                                AND pa.IDPOSTOAREA = :IDPOSTOAREA_". $idarea."
+                                GROUP BY pa.IDPOSTOAREA, tp.IDTIPOOCORRENCIA, EXTRACT(DAY FROM pa.DTOCORRENCIA)
+                                ORDER BY NRDIA) sub on sub.IDTIPOOCORRENCIA = t.IDTIPOOCORRENCIA
+                                where t.FLAREAABERTA  = 'N')";
+
+            if ($i < $total - 1)
+                $sql .= "\n\nUNION ALL\n\n";
+        }
+
+        $arrOcorrenciasDiarias = Database::MontaArrayChaveComposta3($sql, $arrBinds, 'DSUNIDADE', 'NMOCORRENCIA', 'NRDIA', array('TOTAL'));
+        $arrTotal = array();
+        for ($i = 1; $i <= 31; $i++) {
+            foreach ($arrOcorrenciasDiarias as $unidade => $arrOcorrencia) {
+                foreach ($arrOcorrencia as $nmOcorrencia => $dia) {
+                    $arrTotal[$i] = 0;
+                    if (!array_key_exists($i, $dia)) {
+                        $arrOcorrenciasDiarias[$unidade][$nmOcorrencia][$i]['TOTAL'] = 0;
+                        ksort($arrOcorrenciasDiarias[$unidade][$nmOcorrencia]);
+                    }
+                }
+            }
+        }
+
+        $str = "";
+        $str .= "<div>";
+            $str .= "<table>";
+                $str .= "<tr>";
+                    $str .= "<td><img src='./img/logo.png' style='width: 120px;'></td>";
+                    $str .= "<td><p>Universidade de Passo Fundo<br>Divisão de Serviços Gerais<br>Segurança Patrimonial</p><td>";
+                $str .= "</tr>";
+            $str .= "</table>";
+        $str .= "</div>";
+
+        $str .= "<p style='text-align: center;'>Controle Diário<br>".$this->post['DAMESREFERENCIA']."</p>";
+
+        $str .= "<div class='inline-content ibox'>";
+            $str .= "<div class='inline-body table-responsive'>";
+                $str .= "<table border='1' cellpading='0' cellspacing='0' style='width:100%; border-collapse: collapse;'>";
+                    $str .= "<tbody>";
+                        $str .= "<tr style='font-weight: bold;'>";
+                            $str .= "<td style='width:5%;'>Unidade</td>";
+                            $str .= "<td style='width:11%'>Ocorrência</td>";
+                            for ($i = 1; $i <= 31; $i++):
+                                $str .= "<td style='width: 2%;'>".str_pad($i, 2, '0', STR_PAD_LEFT)."</td>";
+
+                            endfor;
+                            $str .= "<td style='width:5%'>Sub-Total</td>";
+                        $str .= "</tr>";
+                            foreach ($arrOcorrenciasDiarias as $unidade => $arrDadosOcorrencia):
+                                $str .= "<tr>";
+                                    $str .= "<td colspan='1' rowspan='8' style='width:5%; text-align: center; vertical-align: middle; text-rotate: 90'>".$unidade."</td>";
+                                        foreach ($arrDadosOcorrencia as $ocorrencia => $arrDia): 
+                                            $ocorrencias = 0;
+                                            $str .= "<tr>";
+                                            $str .= "<td style='width:11%'>".$ocorrencia."</td>";
+                                                foreach ($arrDia as $dia => $total):
+                                                    if ($dia <> NULL):
+                                                        $ocorrencias += $total['TOTAL']; 
+                                                        $arrTotal[$dia] += $total['TOTAL'];
+                                                        $str .= "<td style='width:2%'>".$total['TOTAL']."</td>";
+                                                endif;
+                                                endforeach;
+                                            $str .= "<td style='width:2%'>".$ocorrencias."</td>";
+                                        $str .= "</tr>";
+                                        endforeach;
+                                $str .= "</tr>";
+                            endforeach;
+                            foreach ($arrTotal as $dia => $totalDia)
+                        $str .= "<tr style='font-weight: bold'>";
+                            $str .= "<td colspan='2' style='width:15.8%; text-align: center;'>Sub-Total por Dia</td>";
+                                foreach ($arrTotal as $dia => $totalDia):
+                                    $str .= "<td colspan='1' style='width: 2%;'>".$totalDia."</td>";
+                                endforeach;
+                            $str .= "<td colspan='1' style='width: 5%'>".array_sum($arrTotal)."</td>";
+                        $str .= "</tr>";
+                    $str .= "</tbody>";
+                $str .= "</table>";
+            $str .= "</div>";
+        $str .= "</div>";
+
+        return $str;
     }
 
     private function GeraPDF() {

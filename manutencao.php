@@ -50,6 +50,9 @@ $arrAnalise = Database::ExecutaSQLDados($sql, $arrBinds);
 ?>
 <div class="ibox">
     <div class="ibox-content">
+        <div class="ibox-header">
+            <span class="ibox-title">Manutenção de Ocorrências</span>
+        </div>
         <div class="container">
             <div id="resumo">
                 <h3 id="ocorrencia">Ocorrência:</h3><span style='font-size: 16px'><?= $arrOcorrencia[$idOcorrencia]['NMOCORRENCIA']; ?></span>

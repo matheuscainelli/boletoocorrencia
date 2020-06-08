@@ -65,8 +65,42 @@ VerificaAcesso();
                         ],
                     });
                 });
+
+                function AbreModalSobre() {
+                    $('#ModalSobre').modal('show');
+                }
         </script>
         <body>
+            <div id='ModalSobre' class='modal modalDetalhe fade'>
+                <div class='modal-dialog modal-lg'>
+                    <div class='modal-content'>
+                        <div class='modal-header'>
+                            <button id='closeModal' type='button' class='close' data-dismiss='modal' aria-label='Close'>
+                                <span aria-hidden='true'>&times;</span>
+                            </button>
+                            <h4 class='modal-title'>Sobre</h4>
+                        </div>
+                        <div class='modal-body' style='font-size: 15px'>
+                            Sistema Densevolvido pelos alunos do 3º Nível do Curso de Ciência da Computação da Universidade de Passo Fundo - Campus | Passo Fundo.<br/>
+                            Este projeto foi parte da disciplina de Engenharia de Software 2020/1, com o objetivo de suprir
+                            a demanda do Setor de Vigilância da Universidade de Passo Fundo. Permitindo realizar o registro de
+                            ocorrências, bem como o anexo de imagens, que após isso podem ser gerados relatórios gerenciais para diversas finalidades. <br/>
+
+                            <b>Fizeram parte deste projeto: </b><br/>
+                            Alexandre Lazaretti Zanatta<br/>
+                            César Augusto de Figueredo Júnior<br/>
+                            Diógenes Pereira Fernandes<br/>
+                            Geanfrancesco Fiorini<br/>
+                            Karol Souza<br/>
+                            Nícolas Ferreira de Mello Costa<br/>
+                            Paulo Ricardo Andrade Nobre<br/>
+                            William Simionatto Nepomuceno<br/>
+                            <p style='text-align: right; font-weight: bold;'>Passo Fundo, Junho/2020</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div id="wrapper">
                 <nav class="navbar-default navbar-static-side" role="navigation">
                     <div class="sidebar-collapse">
@@ -81,7 +115,7 @@ VerificaAcesso();
                                     <img src="img/icon.png" width="30px">
                                 </div>
                             </li>
-                            <li class=>
+                            <li>
                                 <a href="index.php">
                                     <i class="fa fa-home"></i><span class="nav-label">Início</span>
                                 </a>
@@ -106,6 +140,11 @@ VerificaAcesso();
                                     MontaMenuPermissao('Relatório Gerencial', 'relatorio.php', ValidaPermissao('REL_GERENCIAL'))
                                 );
                             ?>
+                            <li>
+                                <a onclick="AbreModalSobre()">
+                                    <i class="fas fa-question-circle"></i><span class="nav-label">Sobre</span>
+                                </a>
+                            </li>
                         </ul>
                     </div>
                 </nav>
