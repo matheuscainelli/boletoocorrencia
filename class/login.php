@@ -125,6 +125,7 @@ class Login {
                                     <?= HTML::AddInput('password', 'passwordnew', null, ['class'=>'form-control input-sm m-b', 'placeholder'=>'Nova Senha', 'required'=>true]); ?>
                                 </div>
                                 <div class="inline-footer end">
+                                    <a class="btn btn-primary btn-outline" style='margin-right: 10px' href='login.php'>Voltar</a>
                                     <?= HTML::AddButton('submit', 'btnAlteraSenha', 'Alterar', ['class'=>'btn btn-primary btn-sm']); ?>
                                 </div>
                             </form>
