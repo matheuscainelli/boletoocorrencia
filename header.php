@@ -39,6 +39,7 @@ VerificaAcesso();
             <link rel="stylesheet" href="datatables/datatables.min.css"/>
             <link rel="stylesheet" href="summernote/summernote.css">
             <link rel="stylesheet" href="datepicker/datepicker.css ">
+            <link rel="stylesheet" href="css/index.css ">
         </head>
 
         <script type="text/javascript">
@@ -134,7 +135,7 @@ VerificaAcesso();
                                 );
                                 MenuCria('<i class="fa fa-wrench"></i>Tarefas',
                                 MontaMenuPermissao('Manutenção de Ocorrências', 'relmanutencao.php', ValidaPermissao('TAR_MANUTENCAO')).
-                                    MontaMenuPermissao('Ocorrências', 'index.php', ValidaPermissao('CAD_OCORRENCIA'))
+                                    MontaMenuPermissao('Ocorrências', 'ocorrencia.php', ValidaPermissao('CAD_OCORRENCIA'))
                                 );
                                 MenuCria('<i class="fa fa-search"></i>Consultas',
                                     MontaMenuPermissao('Relatório Gerencial', 'relatorio.php', ValidaPermissao('REL_GERENCIAL'))

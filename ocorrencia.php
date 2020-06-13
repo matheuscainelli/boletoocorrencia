@@ -1,5 +1,5 @@
 <?php
-require 'header.php';
+require_once 'header.php';
 $filtro = " AND pa.IDUSUARIOINC = ".$_SESSION['IDUSUARIO'];
 $filtro .= " AND DATE_FORMAT(pa.DTOCORRENCIA , '%d/%m/%Y') = DATE_FORMAT(CURRENT_TIMESTAMP() , '%d/%m/%Y')";
 

@@ -1,0 +1,103 @@
+#divModulos {
+    margin-top: 60px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+#divModulos > div {
+    transition: .15s all ease-in-out;
+    width: 32%;
+    height: 90px;
+    margin: 5px;
+    border-radius: 5px;
+}
+#divModulos > div:hover {
+    transform: scale(1.02);
+}
+#divModulos .modulo-icon,
+#divModulos .modulo-content {
+    float: left;
+    height: 100%;
+}
+#divModulos .modulo-icon {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 5px 0 0 5px;
+    width: 25%;
+}
+#divModulos .modulo-icon > i {
+    font-size: 45px;
+    color: #fff;
+}
+#divModulos .modulo-icon > i.sicon {
+    font-size: 35px;
+}
+#divModulos .modulo-content {
+    /* background: var(--corPrincipal); */
+    /*border: 1px solid var(--corSecundaria);*/
+    border-radius: 0 5px 5px 0;
+    width: 75%;
+}
+#divModulos .modulo-content > * {
+    margin: 6px 11px 2px;
+    color: #fff;
+    width: 100%;
+    display: block;
+}
+#divModulos .modulo-content .modulo-count {
+    font-size: 28px;
+    font-weight: 600;
+    line-height: 1.2;
+}
+
+.icon-bold {
+    font-size: 50px!important;
+    font-weight: 700;
+}
+
+.toast-title, .toast-message {
+    font-size: 14px;
+}
+
+#divModulos > div.modulo-bloqueado > div, .modulo-bloqueado > a, #divModulos > div.modulo-bloqueado > div > a:nth-child(1), #divModulos > div.modulo-bloqueado > div > a.modulo-link {
+    cursor: no-drop !important;
+}
+
+span.modulo-andamento {
+    float: right;
+    margin-right: 5%;
+    font-size: 15px;
+}
+
+#divModulos .pendente .modulo-content {
+    background: #1e98ef;
+}
+
+#divModulos .pendente .modulo-icon {
+    background: #1378bf;
+}
+
+#divModulos .resolvida .modulo-content, #divModulos .gerente .modulo-content{
+    background: #64c832;
+}
+
+#divModulos .resolvida .modulo-icon, #divModulos .gerente .modulo-icon {
+    background: #55b127;
+}
+
+#divModulos .emanalise .modulo-content {
+    background: #f7d324;
+}
+
+#divModulos .emanalise .modulo-icon {
+    background: #e0c025;
+}
+
+#divModulos .encaminhada .modulo-content {
+    background:  var(--corSecundaria);
+}
+
+#divModulos .encaminhada .modulo-icon {
+    background: var(--corPrincipal);
+}

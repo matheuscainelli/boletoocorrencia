@@ -317,16 +317,18 @@ class Form {
 
         for ($i = 0; $i < count($arrArquivos); $i++) {
             if (array_key_exists($i, $arrArquivos['name']) && $arrArquivos['name'][$i] <> NULL) {
-                $nmtemporario = $arrArquivos['tmp_name'][$i];
-                $dsconteudo = file_get_contents($nmtemporario);
-                $dados = array($this->chaveAnexo=>$sequencial,
-                              'IDOCORRENCIA'=>$id,
-                              'DSARQUIVO'=>base64_encode(gzcompress($dsconteudo)),
-                              'NRTAMANHOARQUIVO'=>$arrArquivos['size'][$i],
-                              'NMARQUIVO'=>$arrArquivos['name'][$i],
-                              'TPANEXO'=>$arrArquivos['type'][$i]);
-                Database::Insere($this->tabelaAnexo, $dados);
-                $sequencial++;
+                if ($arrArquivos['size'][$i] < 10000) { // Valida tamanho do arquivo, conforme documentação
+                    $nmtemporario = $arrArquivos['tmp_name'][$i];
+                    $dsconteudo = file_get_contents($nmtemporario);
+                    $dados = array($this->chaveAnexo=>$sequencial,
+                                  'IDOCORRENCIA'=>$id,
+                                  'DSARQUIVO'=>base64_encode(gzcompress($dsconteudo)),
+                                  'NRTAMANHOARQUIVO'=>$arrArquivos['size'][$i],
+                                  'NMARQUIVO'=>$arrArquivos['name'][$i],
+                                  'TPANEXO'=>$arrArquivos['type'][$i]);
+                    Database::Insere($this->tabelaAnexo, $dados);
+                    $sequencial++;
+                }
             }
         }
 

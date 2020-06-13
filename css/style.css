@@ -9772,6 +9772,10 @@ body.md-skin {
     transition: background-color 500ms linear;
     background-color: #f3f3f4;
   }
+
+  .ibox-buttons {
+    display: inline-flex;
+  }
 }
 @media (max-width: 425px) {
   .top-navigation #header > #header-nav,

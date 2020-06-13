@@ -314,12 +314,9 @@ class Filter {
                                 endforeach;
                             ?>
                         </tr>
-                    </tbody>
-                </table>
-                <table class='table table-striped table-bordered table-hover'>
-                    <tbody>
+
                         <tr style='font-weight: bold'>
-                            <td colspan='2' style='width:15.8%'>Sub-Total por Dia</td>
+                            <td colspan='1' style='width:15.8%'>Sub-Total por Dia</td>
                             <?php
                                 foreach ($arrTotal as $dia => $totalDia): ?>
                                     <td colspan='31' style='width: 2%;'><?= $totalDia ?></td>
@@ -703,9 +700,15 @@ class Filter {
             if ($i < $total - 1)
                 $sql .= "\n\nUNION ALL\n\n";
         }
-
         $arrOcorrenciasDiarias = Database::MontaArrayChaveComposta3($sql, $arrBinds, 'DSUNIDADE', 'NMOCORRENCIA', 'NRDIA', array('TOTAL'));
         $arrTotal = array();
+
+        $sql =  "SELECT (COUNT(pa.IDTIPOOCORRENCIA) + 1 )TOTAL
+                 FROM tipoocorrencia pa
+                 WHERE pa.FLAREAABERTA = 'N'";
+        $total = Database::ExecutaSQLDados($sql, array());
+        $rowSpan = $total[0]['TOTAL'];
+
         for ($i = 1; $i <= 31; $i++) {
             foreach ($arrOcorrenciasDiarias as $unidade => $arrOcorrencia) {
                 foreach ($arrOcorrencia as $nmOcorrencia => $dia) {
@@ -737,7 +740,7 @@ class Filter {
                         <?php
                             foreach ($arrOcorrenciasDiarias as $unidade => $arrDadosOcorrencia): ?>
                                 <tr>
-                                    <td colspan="1" rowspan="8" style="width:5%; text-align: center; vertical-align: middle;"><?= $unidade; ?></td>
+                                    <td colspan="1" rowspan="<?=$rowSpan;?>" style="width:5%; text-align: center; vertical-align: middle;"><?= $unidade; ?></td>
                                     <?php
                                         foreach ($arrDadosOcorrencia as $ocorrencia => $arrDia): 
                                             $ocorrencias = 0;?>

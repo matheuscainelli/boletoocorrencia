@@ -286,7 +286,8 @@ function BuscaArrCampus() {
 
 function BuscaArrGrupo() {
     $sql = "SELECT pa.IDGRUPO, pa.NMGRUPO
-            FROM grupo pa";
+            FROM grupo pa
+            WHERE pa.IDGRUPO <> 1";
 
     return Database::MontaArraySelect($sql, [], 'IDGRUPO', 'NMGRUPO');
 }

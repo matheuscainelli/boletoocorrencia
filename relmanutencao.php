@@ -40,7 +40,7 @@ $filter->AddTable('DSSTATUS', 'Status', [], ['style'=>'width: 10%']);
 $filter->AddTable('BTNACAO', '', [], ['style'=>"width: 2%; text-align: center"]);
 $filter->Show();
 ?>
-<script type="text/javascript">
+<script type="text/javascript">   
      $(document).ready(function() {
         $('#DTOCORRENCIA').datepicker({
             format: 'mm/yyyy',
@@ -53,6 +53,17 @@ $filter->Show();
             // $(this).parents('tr').remove();
             window.open('manutencao.php?IDOCORRENCIA='+idOcorrencia, '_blank')
         });
+
+        let searchParams = new URLSearchParams(window.location.search);
+        if (searchParams.has('TPSTATUS')) {
+            var data = new Date();
+            data = data.toLocaleDateString();
+            data = data.substring(3, 10);
+
+            $('#DTOCORRENCIA').val(data);
+            $('#TPSTATUS').val(searchParams.get('TPSTATUS'));
+            $('#btnFiltrar').trigger('click');
+        }
     })
 </script>
 <?php
