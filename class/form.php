@@ -18,7 +18,6 @@ class Form {
     private $HabilitaAnexo = false;
     private $tabelaAnexo = null;
     private $chaveAnexo = null;
-    private $arrAnexo = [];
 
     function __construct($permissao, $legend) {
         if (!$permissao) {
@@ -36,12 +35,6 @@ class Form {
 
     public function setAction($action) {
         $this->action = $action;
-    }
-
-    public function VerificaParam($param) {
-        $vlparam = array_key_exists($param, $_GET) ? $_GET[$param] : array_key_exists($param, $_POST) ? $_POST[$param] : NULL;
-
-        return $vlparam;
     }
 
     public function SetSql($sql, $tabela, $chave) {

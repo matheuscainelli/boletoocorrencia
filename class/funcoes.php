@@ -1,11 +1,11 @@
 <?php
-function printr($var) {
+function printr($var) { // função para debug
     echo '<pre>';
     print_r($var);
     echo '</pre>';
 }
 
-function vardump($var) {
+function vardump($var) { // função para debug
     echo '<pre>';
     var_dump($var);
     echo '</pre>';
@@ -13,30 +13,6 @@ function vardump($var) {
 
 function QuotedStr($str) {
     return "'".addslashes($str)."'";
-}
-
-function RemoveAcento($str) {
-    $comAcento = "ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõöøùúûýýþÿŔŕ";
-    $semAcento = "AAAAAAACEEEEIIIIDNOOOOOOUUUUYbsaaaaaaaceeeeiiiidnoooooouuuyybyRr";
-
-    return utf8_encode(strtr(utf8_decode($str), utf8_decode($comAcento), $semAcento));
-}
-
-function Div($valor1, $valor2) {
-    if (intval($valor1) === 0 || intval($valor2) === 0)
-        return 0;
-
-    return $valor1 / $valor2;
-}
-
-function GetSystemName() {
-    $system = substr(dirname($_SERVER['PHP_SELF']), 1);
-    $posEnd = strpos($system, '/') !== false ? strpos($system, '/') : strlen($system);
-    $system = substr($system, 0, $posEnd);
-
-    $system = preg_replace('@[^\w|^\-|^,|^\d]@', '', $system);
-
-    return $system;
 }
 
 function ValidaData($data) {

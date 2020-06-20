@@ -1,7 +1,5 @@
 <?php
 
-use function PHPSTORM_META\exitPoint;
-
 class Filter {
     public $permissao;
     private $legend;
