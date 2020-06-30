@@ -310,7 +310,7 @@ class Form {
 
         for ($i = 0; $i < count($arrArquivos); $i++) {
             if (array_key_exists($i, $arrArquivos['name']) && $arrArquivos['name'][$i] <> NULL) {
-                if ($arrArquivos['size'][$i] < 10000) { // Valida tamanho do arquivo, conforme documentação
+                if ($arrArquivos['size'][$i] < 1000000) { // Valida tamanho do arquivo, conforme documentação
                     $nmtemporario = $arrArquivos['tmp_name'][$i];
                     $dsconteudo = file_get_contents($nmtemporario);
                     $dados = array($this->chaveAnexo=>$sequencial,
