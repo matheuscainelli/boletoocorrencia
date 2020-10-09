@@ -1,0 +1,6 @@
+{
+    "name": "root/project",
+    "require-dev": {
+        "phpunit/phpunit": "^9.3"
+    }
+}

@@ -1,6 +1,6 @@
 <?php
 session_start();
-require 'class/login.php';
+require 'classes/login.php';
 
 $login = new Login();
 $login->AltereSenha();

@@ -2,12 +2,12 @@
 session_start();
 ob_start();
 require 'config/config.php';
-require 'class/html.php';
-require 'class/database.php';
-require 'class/session.php';
-require 'class/form.php';
-require 'class/filter.php';
-require_once 'class/funcoes.php';
+require 'classes/html.php';
+require 'classes/database.php';
+require 'classes/session.php';
+require 'classes/form.php';
+require 'classes/filter.php';
+require_once 'classes/funcoes.php';
 
 VerificaAcesso();
 ?>

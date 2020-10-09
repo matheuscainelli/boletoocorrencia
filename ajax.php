@@ -1,6 +1,6 @@
 <?php
-require_once 'class/database.php';
-require_once 'class/session.php';
+require_once 'classes/database.php';
+require_once 'classes/session.php';
 Database::ConnectaBD();
 
 function DownloadArquivo($idAnexo) {

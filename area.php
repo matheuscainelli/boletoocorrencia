@@ -4,7 +4,7 @@ require 'header.php';
 $sql = "SELECT pa.*, g.NMGRUPO
         FROM area pa
         LEFT JOIN grupo g ON g.IDGRUPO = pa.IDGRUPO
-		WHERE TRUE";
+        WHERE TRUE";
 
 $form = new Form(ConsultaPermissao('CAD_AREA'), "Área");
 $form->SetSql($sql, 'area', 'IDAREA');
