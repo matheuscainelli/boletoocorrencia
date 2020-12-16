@@ -253,6 +253,16 @@ class Database {
         return $result[0]['IDSEQUENCIA'] ?? null;
     }
 
+    public static function registroExiste($nmTabela, $id) {
+        $nmCampo = 'ID'.strtoupper($nmTabela);
+        $sql = "SELECT pa.$nmCampo IDCAMPO
+                FROM $nmTabela pa
+                where pa.$nmCampo = $id";
+        $result = Database::ExecutaSQLDados($sql);
+
+        return $result[0]['IDCAMPO'] ?? null;
+    }
+
     public static function Insere($nmTabela, $arrDados) {
         Database::AdicionaCamposPadrao($arrDados, ['IDUSUARIOINC', 'DTINCLUSAO', 'IDUSUARIOALT', 'DTALTERACAO']);
 

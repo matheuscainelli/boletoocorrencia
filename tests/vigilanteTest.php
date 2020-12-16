@@ -8,12 +8,23 @@ use PHPUnit\Framework\TestCase;
 
 
 class vigilanteTest extends TestCase {
-    /** @test */ 
-    public function isAllowedToOrder()
+    /*
+    
+    public function inserirvigilante()
     {
-    $subjec = new Vigilantes(null,1 );
+    $subjec = new Vigilantes(1,1 );
         
         $isvalid = $subjec-> insert();
+
+        $this->assertEquals( 3, $isvalid);
+    }*/
+
+    /** @test */ 
+    public function editVigilante()
+    {
+    $subjec = new Vigilantes(4 ,"sss" );
+        
+        $isvalid = $subjec-> deleteVigilante();
 
         $this->assertEquals( 3, $isvalid);
     }

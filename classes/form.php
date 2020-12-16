@@ -293,7 +293,7 @@ class Form {
                 $dados[$key] = $value;
             }
         }
-
+        echo "<pre>".print_r($dados)."</pre>";
         return $dados;
     }
 
@@ -355,6 +355,7 @@ class Form {
                     Database::Insere($this->nmTabela, $dados);
                     break;
                 case 'u':
+                   
                     Database::Edita($this->nmTabela, $dados, [$this->chave=>$this->id]);
                     break;
                 case 'd':
@@ -366,7 +367,7 @@ class Form {
                 $this->InsereAnexo($id);
             }
 
-            //header('location:'.$this->action);
+            header('location:'.$this->action);
         }
 
         if (!array_key_exists('acao', $_GET)) {

@@ -29,6 +29,21 @@ class Vigilantes
         Database::ConnectaBD();   
     }
     
+    public function getNomeVigilante() {
+        return $this->nomeVigilante;
+    }
+      
+    public function setNomeVigilante($name) {
+        $this->nomeVigilante= $name;
+    }
+
+    public function getCodVigilante() {
+        return $this->codVigilante;
+    }
+      
+    public function setCodVigilante($codigo) {
+        $this->codVigilante= $codigo;
+    }
 
     public function insert(){
         if($this-> codVigilante == null){
@@ -39,21 +54,39 @@ class Vigilantes
                 "NMVIGILANTE" => $this -> nomeVigilante,
             ];
             Database::Insere('vigilante',  $this ->dados);
-            return $id;
+            return true;
+        }else{
+            return false;
         }
-    /* $dados[$this->chave] = $id;
-        Database::Insere($this->nmTabela, $dados);
-        //$this->formclass-> show();
-        if (1==1) {
-            return $id;
-        } else {
-            return $id;
-        }*/
     }
-    public function edit(){
-       // Database::Edita($this->nmTabela, $dados, [$this->chave=>$this->id]);
     
+    public function editVigilante(){
+        if(!empty($this-> codVigilante) && !empty($this-> nomeVigilante) ){
+            $this -> dados =[
+                "IDVIGILANTE" => $this -> codVigilante,
+                "NMVIGILANTE" => $this -> nomeVigilante,
+            ];
+            Database::Edita('vigilante',  $this ->dados,  ['IDVIGILANTE'=>$this->codVigilante]);
+            return true;
+        }else{
+            return false;
+        }
+    } 
+
+    public function deleteVigilante(){
+        if(!empty($this-> codVigilante) && !empty($this-> nomeVigilante) ){
+            $id = Database::registroExiste('vigilante',  $this->codVigilante);
+            if($id == $this-> codVigilante){
+                Database::Deleta('vigilante',  ['IDVIGILANTE'=>$this->codVigilante]);
+            }else{
+                return false;
+            }
+            return true;
+        }else{
+            return false;
+        }
     }  
-        
+    
+
     
 }
